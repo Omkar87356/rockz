@@ -1,0 +1,2108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lourdes Matha College Smart Canteen — Smart Campus System</title>
+  <meta name="description" content="Lourdes Matha College Smart Canteen: Smart Food • Smart Queue • Smart Campus. Automated staggered break departure, pre-ordering, crowd analytics, and live token tracking." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <!-- QR Code and Chart.js libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="js/jsbarcode.min.js"></script>
+</head>
+<body>
+
+  <!-- ========================================================
+       1. LANDING / WELCOME PAGE
+       ======================================================== -->
+  <div id="page-landing" class="page-view active">
+    <!-- College Topbar -->
+    <header class="landing-header">
+      <div class="landing-brand">
+        <div class="college-logo-badge">
+          <svg class="cross-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 2h4v6h6v4h-6v10h-4V12H4V8h6V2z"/>
+          </svg>
+          <span class="badge-text">LMC</span>
+        </div>
+        <div class="brand-text-block">
+          <span class="brand-college-name">Lourdes Matha College</span>
+          <span class="brand-sub">Autonomous • Affiliated to KTU • Changanassery Archdiocese</span>
+        </div>
+      </div>
+      <nav class="landing-nav-actions">
+        <button class="btn btn-ghost" onclick="app.showPublicMenu()">
+          <span>🍽️</span> View Today's Menu
+        </button>
+        <button class="btn btn-primary" onclick="app.showLogin()">
+          <span>🔐</span> Login to Canteen
+        </button>
+      </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="landing-hero">
+      <div class="hero-bg-pattern"></div>
+      <div class="hero-content">
+        <div class="hero-pill">
+          <span class="pill-dot"></span>
+          <span>Official Campus Dining & Queue Automation System</span>
+        </div>
+
+        <h1 class="hero-title">
+          <span class="hero-title-college">Lourdes Matha College</span>
+          <span class="hero-title-main">Smart Canteen</span>
+        </h1>
+
+        <p class="hero-subtitle">
+          Smart Food &bull; Smart Queue &bull; Smart Campus
+        </p>
+
+        <p class="hero-description">
+          Plan your canteen visit, check today's menu, reserve your food, and receive your smart arrival time. 
+          Staggered departures reduce crowd bottlenecks and ensure your fresh meal is ready when you arrive after your 5-minute walk.
+        </p>
+
+        <div class="hero-cta-group">
+          <button class="btn btn-hero-primary" onclick="app.showLogin()">
+            <span>🔐</span> Login &amp; Order
+          </button>
+          <button class="btn btn-hero-secondary" onclick="app.showPublicMenu()">
+            <span>🍛</span> View Today's Menu (13 Items)
+          </button>
+          <button class="btn btn-hero-outline" onclick="app.quickDemoStudent()">
+            <span>⚡</span> Quick Demo as Student
+          </button>
+        </div>
+
+        <!-- Live Canteen Stat Pills -->
+        <div class="hero-live-strip">
+          <div class="live-strip-item">
+            <span class="live-strip-icon">👥</span>
+            <div>
+              <div class="live-strip-val" id="landing-crowd-status">🟢 LOW (43% Capacity)</div>
+              <div class="live-strip-label">Live Canteen Crowd</div>
+            </div>
+          </div>
+          <div class="live-strip-divider"></div>
+          <div class="live-strip-item">
+            <span class="live-strip-icon">⏱️</span>
+            <div>
+              <div class="live-strip-val">~4 Minutes</div>
+              <div class="live-strip-label">Estimated Queue Wait</div>
+            </div>
+          </div>
+          <div class="live-strip-divider"></div>
+          <div class="live-strip-item">
+            <span class="live-strip-icon">🚶</span>
+            <div>
+              <div class="live-strip-val">5 Min Walk</div>
+              <div class="live-strip-label">Classroom to Canteen</div>
+            </div>
+          </div>
+          <div class="live-strip-divider"></div>
+          <div class="live-strip-item">
+            <span class="live-strip-icon">⏰</span>
+            <div>
+              <div class="live-strip-val">11:00 – 11:15 AM</div>
+              <div class="live-strip-label">Morning Break Window</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Core Staggering Feature Story Section -->
+    <section class="stagger-story-section">
+      <div class="section-container">
+        <div class="section-badge">How Smart Staggering Works</div>
+        <h2 class="section-heading">No More Mad Rush During College Breaks</h2>
+        <p class="section-lead">
+          During the 11:00 AM – 11:15 AM break, over 700 students used to rush simultaneously. The Smart Canteen automatically staggers departure times based on department &amp; classroom distance, taking into account the 5-minute walking time.
+        </p>
+
+        <div class="stagger-timeline-cards">
+          <div class="stagger-step-card">
+            <div class="step-num-bubble">1</div>
+            <div class="step-icon">📱</div>
+            <h3>Pre-Select Food</h3>
+            <p>Select your favorite Kerala snacks or meals from your desk before break starts.</p>
+            <span class="step-tag">Zero Counter Wait</span>
+          </div>
+
+          <div class="stagger-step-card highlight">
+            <div class="step-num-bubble">2</div>
+            <div class="step-icon">⏰</div>
+            <h3>Smart Departure Time</h3>
+            <p>System assigns your group (e.g. Leave at 11:04 AM) within the 11:00–11:15 AM break.</p>
+            <span class="step-tag tag-accent">5-Min Walk Factored</span>
+          </div>
+
+          <div class="stagger-step-card">
+            <div class="step-num-bubble">3</div>
+            <div class="step-icon">🚶</div>
+            <h3>Walk to Canteen</h3>
+            <p>5-minute relaxed walk from campus classrooms to the ground-floor canteen.</p>
+            <span class="step-tag">Smooth Inflow</span>
+          </div>
+
+          <div class="stagger-step-card">
+            <div class="step-num-bubble">4</div>
+            <div class="step-icon">🎫</div>
+            <h3>Scan QR &amp; Collect</h3>
+            <p>Show your digital token QR at the pickup counter. Your hot food is packed and ready!</p>
+            <span class="step-tag">Eat Inside Comfortably</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Campus Features Grid -->
+    <section class="landing-features-section">
+      <div class="section-container">
+        <h2 class="section-heading centered">Designed Specifically for Lourdes Matha Campus</h2>
+        <p class="section-lead centered">Not a food delivery app. A physical queue and dining optimization suite.</p>
+
+        <div class="features-mosaic">
+          <div class="mosaic-card">
+            <div class="mosaic-icon">🏛️</div>
+            <h3>Department Scheduling</h3>
+            <p>Covers all 8 college departments: CS, CS with AI, EC, EEE, ME, Civil, Arts, and Hotel Management.</p>
+          </div>
+          <div class="mosaic-card">
+            <div class="mosaic-icon">🍛</div>
+            <h3>Kerala Canteen Classics</h3>
+            <p>Hot Masala Dosa, Kerala Meals, Chicken Dum Biriyani, crispy Vada, Puffs, Tea &amp; Coffee prepared fresh.</p>
+          </div>
+          <div class="mosaic-card">
+            <div class="mosaic-icon">💳</div>
+            <h3>Dual Payment Flexibility</h3>
+            <p>Instant UPI/GPay simulation or traditional Cash at Canteen payment counter upon token pickup.</p>
+          </div>
+          <div class="mosaic-card">
+            <div class="mosaic-icon">👨‍🍳</div>
+            <h3>Staff Kitchen Production Queue</h3>
+            <p>Kitchen staff view predictive demand batches so they fry puffs and brew tea in exact required quantities.</p>
+          </div>
+          <div class="mosaic-card">
+            <div class="mosaic-icon">📊</div>
+            <h3>Admin P&amp;L &amp; Waste Analytics</h3>
+            <p>Complete revenue, expense breakdown, net profit, and food waste reduction metrics.</p>
+          </div>
+          <div class="mosaic-card">
+            <div class="mosaic-icon">🔔</div>
+            <h3>Smart Countdown Alerts</h3>
+            <p>Desktop &amp; mobile notifications when it's time to step out of class, and when food is plated.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Landing Footer Message -->
+    <footer class="landing-footer">
+      <div class="footer-container">
+        <div class="footer-mission-banner">
+          <div class="fmb-title">SMART CANTEEN — SMART CAMPUS</div>
+          <p class="fmb-text">
+            Reducing crowd. Reducing waiting time. Reducing food waste.<br />
+            Helping students reach the canteen at the right time and helping staff prepare the right amount of food.
+          </p>
+        </div>
+
+        <div class="footer-bottom-row">
+          <div class="fbr-college">
+            <div class="fbr-logo">✝ LMC</div>
+            <div>
+              <div class="fbr-name">Lourdes Matha College</div>
+              <div class="fbr-mgmt">Owned &amp; Managed by the Archdiocese of Changanassery</div>
+            </div>
+          </div>
+          <div class="fbr-links">
+            <span class="demo-tag">Prototype Demo v2.4</span>
+            <button class="btn btn-sm btn-outline-white" onclick="app.showLogin()">Campus Portal Login</button>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ========================================================
+       PUBLIC MENU MODAL / VIEW
+       ======================================================== -->
+  <div id="page-public-menu" class="page-view">
+    <div class="page-topbar">
+      <button class="btn btn-ghost" onclick="app.showLanding()">← Back to Campus Home</button>
+      <div class="topbar-title">Today's Canteen Menu</div>
+      <button class="btn btn-primary btn-sm" onclick="app.showLogin()">Login to Reserve Food</button>
+    </div>
+    <div class="menu-container">
+      <div class="menu-subheading-banner">
+        <span>Authentic Kerala campus specials prepared fresh today</span>
+        <span class="badge badge-accent">13 items available</span>
+      </div>
+      <div class="menu-filter-pills">
+        <button class="pill-btn active" onclick="app.filterPublicMenu('all', this)">All Items (13)</button>
+        <button class="pill-btn" onclick="app.filterPublicMenu('breakfast', this)">Breakfast</button>
+        <button class="pill-btn" onclick="app.filterPublicMenu('meals', this)">Meals &amp; Lunch</button>
+        <button class="pill-btn" onclick="app.filterPublicMenu('snacks', this)">Snacks</button>
+        <button class="pill-btn" onclick="app.filterPublicMenu('beverages', this)">Beverages</button>
+      </div>
+      <div class="food-grid" id="public-food-grid">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       2. LOGIN PAGE (Student, Staff, Admin)
+       ======================================================== -->
+  <div id="page-login" class="page-view">
+    <div class="login-wrapper">
+      <div class="login-brand-panel">
+        <div class="login-brand-header">
+          <div class="college-logo-badge large">
+            <svg class="cross-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 2h4v6h6v4h-6v10h-4V12H4V8h6V2z"/>
+            </svg>
+            <span class="badge-text">LMC</span>
+          </div>
+          <h2>Lourdes Matha College</h2>
+          <p class="login-brand-sub">Smart Canteen Queue &amp; Dining System</p>
+        </div>
+
+        <div class="login-feature-bullets">
+          <div class="bullet-row">
+            <span class="bullet-check">✓</span>
+            <span>Intelligent 5-min walking window calculation</span>
+          </div>
+          <div class="bullet-row">
+            <span class="bullet-check">✓</span>
+            <span>Live crowd meter &amp; queue wait estimation</span>
+          </div>
+          <div class="bullet-row">
+            <span class="bullet-check">✓</span>
+            <span>Digital token with scannable QR verification</span>
+          </div>
+          <div class="bullet-row">
+            <span class="bullet-check">✓</span>
+            <span>Kitchen production &amp; waste management analytics</span>
+          </div>
+        </div>
+
+        <div class="login-archdiocese-note">
+          Owned &amp; Managed by the Archdiocese of Changanassery
+        </div>
+      </div>
+
+      <div class="login-form-panel">
+        <div class="login-form-card">
+          <div class="login-card-header">
+            <h3>Campus Sign In</h3>
+            <p>Select your portal role to continue</p>
+          </div>
+
+          <!-- Role Selector Tabs -->
+          <div class="role-segmented-control">
+            <button class="role-segment active" id="role-btn-student" onclick="app.selectRole('student')">
+              <span>🎓</span> Student
+            </button>
+            <button class="role-segment" id="role-btn-staff" onclick="app.selectRole('staff')">
+              <span>👨‍🍳</span> Staff
+            </button>
+            <button class="role-segment" id="role-btn-admin" onclick="app.selectRole('admin')">
+              <span>🛡️</span> Admin
+            </button>
+          </div>
+
+          <!-- Demo Quick Fill Box -->
+          <div class="demo-quickfill-box">
+            <div class="demo-quickfill-header">
+              <span>⚡ Click to Auto-Fill Demo Credentials:</span>
+            </div>
+            <div class="demo-chips" id="demo-chips-container">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <form id="login-form" onsubmit="app.handleLoginSubmit(event)">
+            <div class="form-group">
+              <label for="login-id" id="login-id-label">Student ID</label>
+              <div class="input-with-icon">
+                <span class="input-icon">🆔</span>
+                <input type="text" id="login-id" class="form-control" placeholder="e.g. LM2026CS101" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="label-row">
+                <label for="login-password">Password</label>
+                <a href="javascript:void(0)" class="link-muted" onclick="app.showForgotPassword()">Forgot Password?</a>
+              </div>
+              <div class="input-with-icon">
+                <span class="input-icon">🔒</span>
+                <input type="password" id="login-password" class="form-control" placeholder="Enter password" required />
+              </div>
+            </div>
+
+            <div id="login-error-msg" class="alert-error hidden"></div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg">
+              <span>Sign In to Portal</span> →
+            </button>
+          </form>
+
+          <div class="login-card-footer">
+            <button class="btn btn-ghost btn-sm" onclick="app.showLanding()">
+              ← Back to Campus Welcome Page
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       3. STUDENT PORTAL (APP LAYOUT)
+       ======================================================== -->
+  <div id="portal-student" class="portal-layout hidden">
+    <!-- Student Header -->
+    <header class="portal-header">
+      <div class="portal-header-left">
+        <button class="btn-icon mobile-menu-btn" onclick="app.toggleSidebar('student')">☰</button>
+        <div class="header-logo-compact">
+          <span class="logo-box">✝LMC</span>
+          <span class="logo-title">Smart Canteen</span>
+        </div>
+        <span class="header-role-badge student-badge">Student Portal</span>
+      </div>
+
+      <div class="portal-header-right">
+        <!-- Live break pill -->
+        <div class="header-schedule-pill">
+          <span class="pill-dot green"></span>
+          <span>Break: <strong>11:00 – 11:15 AM</strong></span>
+        </div>
+
+        <!-- Notification Bell with Counter -->
+        <button class="btn-icon notif-bell-btn" onclick="app.showStudentView('notifications')">
+          <span class="bell-icon">🔔</span>
+          <span class="notif-count-badge" id="student-notif-badge">3</span>
+        </button>
+
+        <!-- User Profile Pill -->
+        <div class="header-user-pill" onclick="app.showStudentView('profile')">
+          <div class="avatar-circle" id="student-avatar-circle">AK</div>
+          <div class="user-pill-text">
+            <span class="user-pill-name" id="student-header-name">Amal Krishna</span>
+            <span class="user-pill-sub" id="student-header-dept">CS • 2nd Year</span>
+          </div>
+        </div>
+
+        <button class="btn btn-outline-danger btn-sm" onclick="app.logout()" title="Logout">
+          <span>🚪</span> Logout
+        </button>
+      </div>
+    </header>
+
+    <div class="portal-body">
+      <!-- Student Sidebar Nav -->
+      <aside class="portal-sidebar" id="student-sidebar">
+        <div class="sidebar-user-summary">
+          <div class="avatar-circle large" id="student-side-avatar">AK</div>
+          <div class="sidebar-user-name" id="student-side-name">Amal Krishna</div>
+          <div class="sidebar-user-dept" id="student-side-dept">Computer Science (CS)</div>
+          <div class="sidebar-user-token" id="student-side-token">Token: <strong>SC-127</strong></div>
+        </div>
+
+        <nav class="sidebar-nav-list">
+          <button class="sidebar-nav-item active" id="snav-dashboard" onclick="app.showStudentView('dashboard')">
+            <span class="snav-icon">🏠</span> <span>Dashboard</span>
+          </button>
+          <button class="sidebar-nav-item" id="snav-menu" onclick="app.showStudentView('menu')">
+            <span class="snav-icon">🍽️</span> <span>Canteen Menu</span>
+          </button>
+          <button class="sidebar-nav-item" id="snav-cart" onclick="app.showStudentView('cart')">
+            <span class="snav-icon">🛒</span> <span>Food Cart</span>
+            <span class="snav-badge" id="snav-cart-badge">0</span>
+          </button>
+          <button class="sidebar-nav-item" id="snav-orders" onclick="app.showStudentView('orders')">
+            <span class="snav-icon">📋</span> <span>My Orders &amp; Token</span>
+          </button>
+          <button class="sidebar-nav-item" id="snav-canteen" onclick="app.showStudentView('canteen-status')">
+            <span class="snav-icon">👥</span> <span>Live Canteen Status</span>
+          </button>
+          <button class="sidebar-nav-item" id="snav-notifications" onclick="app.showStudentView('notifications')">
+            <span class="snav-icon">🔔</span> <span>Notifications</span>
+            <span class="snav-badge" id="snav-notif-badge">3</span>
+          </button>
+          <button class="sidebar-nav-item" id="snav-profile" onclick="app.showStudentView('profile')">
+            <span class="snav-icon">👤</span> <span>My Profile</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-bottom-status">
+          <div class="status-indicator-box">
+            <div class="status-indicator-title">
+              <span class="pulse-indicator"></span> Canteen Capacity
+            </div>
+            <div class="crowd-bar-micro">
+              <div class="crowd-fill" id="micro-crowd-fill" style="width: 43%;"></div>
+            </div>
+            <div class="micro-status-text">
+              <span id="micro-crowd-label">🟢 LOW Crowd</span>
+              <span id="micro-crowd-count">43 / 100</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Student Main Content Area -->
+      <main class="portal-main">
+
+        <!-- ──────────────────────────────────────────────
+             STUDENT VIEW: DASHBOARD
+             ────────────────────────────────────────────── -->
+        <div id="sview-dashboard" class="student-view-pane active">
+          <!-- Top Greeting & Break Banner -->
+          <div class="student-greeting-banner">
+            <div class="greeting-left">
+              <h1 class="greeting-title" id="student-greeting-title">Good Morning, Amal Krishna 👋</h1>
+              <p class="greeting-subtitle">
+                Welcome to your smart canteen schedule. Your department departure has been coordinated to prevent crowding.
+              </p>
+            </div>
+            <div class="greeting-right">
+              <div class="break-clock-card">
+                <span class="clock-label">TODAY'S BREAK</span>
+                <span class="clock-time">11:00 AM – 11:15 AM</span>
+                <span class="clock-note">Morning Recess (15 mins)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SMART CROWD MANAGEMENT BANNER (MAIN FEATURE 5) -->
+          <div class="canteen-time-feature-card">
+            <div class="ctfc-header">
+              <div class="ctfc-badge-group">
+                <span class="ctfc-main-badge">🔔 YOUR SMART CANTEEN SCHEDULE</span>
+                <span class="ctfc-stagger-badge">Staggered Arrival (Group C)</span>
+              </div>
+              <div class="walking-time-pill">
+                <span>🚶 Walking Time: <strong>~5 Minutes</strong> from CS Block</span>
+              </div>
+            </div>
+
+            <div class="stagger-grid-display">
+              <div class="stagger-metric-box">
+                <div class="smb-label">BREAK WINDOW</div>
+                <div class="smb-val">11:00 – 11:15 AM</div>
+                <div class="smb-sub">Official College Recess</div>
+              </div>
+              <div class="stagger-metric-box highlight-departure">
+                <div class="smb-label">LEAVE YOUR CLASSROOM</div>
+                <div class="smb-val" id="disp-departure-time">11:04 AM</div>
+                <div class="smb-sub">Optimized departure time</div>
+              </div>
+              <div class="stagger-metric-box highlight-arrival">
+                <div class="smb-label">EXPECTED CANTEEN ARRIVAL</div>
+                <div class="smb-val" id="disp-arrival-time">11:09 AM</div>
+                <div class="smb-sub">After 5-min walk across quad</div>
+              </div>
+              <div class="stagger-metric-box">
+                <div class="smb-label">CURRENT CROWD</div>
+                <div class="smb-val status-green" id="disp-crowd-level">🟢 LOW</div>
+                <div class="smb-sub" id="disp-crowd-wait">Estimated wait: ~4 min</div>
+              </div>
+              <div class="stagger-metric-box">
+                <div class="smb-label">ACTIVE TOKEN</div>
+                <div class="smb-val token-val" id="disp-active-token">SC-127</div>
+                <div class="smb-sub" id="disp-token-status">Order in queue</div>
+              </div>
+            </div>
+
+            <!-- LIVE COUNTDOWN TIMER -->
+            <div class="departure-countdown-strip" id="countdown-strip-container">
+              <div class="countdown-strip-content">
+                <div class="countdown-pulse-ring">
+                  <span class="pulse-icon">⏰</span>
+                </div>
+                <div class="countdown-text-group">
+                  <span class="countdown-headline" id="countdown-status-text">Leave for Canteen in:</span>
+                  <span class="countdown-digits" id="live-departure-countdown">02:35</span>
+                  <span class="countdown-subtext" id="countdown-instruction">Classroom departure scheduled at 11:04 AM. Please finish your lab notes.</span>
+                </div>
+              </div>
+              <div class="countdown-action-buttons">
+                <button class="btn btn-primary" onclick="app.showStudentView('menu')">
+                  <span>🍽️</span> Reserve Food Now
+                </button>
+                <button class="btn btn-outline" onclick="app.showStudentView('canteen-status')">
+                  <span>📊</span> Live Crowd
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Stats Row (Section 4) -->
+          <div class="dashboard-metrics-strip">
+            <div class="dmetric-card">
+              <div class="dmetric-icon bg-green-soft">👥</div>
+              <div class="dmetric-info">
+                <div class="dmetric-title">Live Canteen Crowd</div>
+                <div class="dmetric-num" id="stat-crowd-badge">🟢 LOW</div>
+                <div class="dmetric-sub" id="stat-crowd-detail">43 / 100 seats occupied</div>
+              </div>
+            </div>
+            <div class="dmetric-card">
+              <div class="dmetric-icon bg-orange-soft">⏱️</div>
+              <div class="dmetric-info">
+                <div class="dmetric-title">Est. Waiting Time</div>
+                <div class="dmetric-num" id="stat-wait-time">4 Minutes</div>
+                <div class="dmetric-sub">Pickup counter flowing fast</div>
+              </div>
+            </div>
+            <div class="dmetric-card">
+              <div class="dmetric-icon bg-maroon-soft">🍛</div>
+              <div class="dmetric-info">
+                <div class="dmetric-title">Available Food Items</div>
+                <div class="dmetric-num">86 Portions</div>
+                <div class="dmetric-sub">Fresh kitchen batches ready</div>
+              </div>
+            </div>
+            <div class="dmetric-card">
+              <div class="dmetric-icon bg-blue-soft">🚶</div>
+              <div class="dmetric-info">
+                <div class="dmetric-title">Campus Walking Time</div>
+                <div class="dmetric-num">~5 Minutes</div>
+                <div class="dmetric-sub">CS Block → Ground Floor Canteen</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SMART RECOMMENDATION BOX (Section 21) -->
+          <div class="smart-rec-container">
+            <div class="rec-banner-header">
+              <div class="rec-badge-tag">
+                <span class="sparkle">✨</span> SMART AI RECOMMENDATION ENGINE
+                <span class="proto-tag">PROTOTYPE FEATURE</span>
+              </div>
+            </div>
+            <div class="rec-cards-grid">
+              <div class="rec-card positive">
+                <div class="rec-icon">🎯</div>
+                <div class="rec-body">
+                  <h4>Optimal Departure Selected</h4>
+                  <p>Your department departure at <strong>11:04 AM</strong> avoids the 11:00 AM peak spike from EC &amp; Civil departments. Crowd is expected to be <strong>LOW</strong> when you walk in at 11:09 AM.</p>
+                </div>
+              </div>
+              <div class="rec-card warning">
+                <div class="rec-icon">🔥</div>
+                <div class="rec-body">
+                  <h4>Masala Dosa High Demand Alert</h4>
+                  <p><strong>Masala Dosa</strong> is currently the most reserved breakfast item today (35 portions booked). Estimated preparation time: <strong>6 minutes</strong>. Reserve now to guarantee your plate.</p>
+                </div>
+              </div>
+              <div class="rec-card info">
+                <div class="rec-icon">⚡</div>
+                <div class="rec-body">
+                  <h4>Cash Counter Recommendation</h4>
+                  <p>UPI payments reduce counter handover time by 45 seconds. Choose UPI at checkout for rapid 1-second QR scanning.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Order Quick Glance -->
+          <div class="active-order-glance-section" id="active-order-glance">
+            <!-- Rendered via JS if active order exists -->
+          </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────
+             STUDENT VIEW: FOOD MENU (Sections 7 & 8)
+             ────────────────────────────────────────────── -->
+        <div id="sview-menu" class="student-view-pane">
+          <div class="view-header-bar">
+            <div>
+              <h2>Today's Canteen Food Menu</h2>
+              <p class="text-muted">Reserve your food before walking to the canteen. Physical dine-in only — not food delivery.</p>
+            </div>
+            <div class="view-header-right">
+              <button class="btn btn-primary" onclick="app.showStudentView('cart')">
+                <span>🛒</span> View Cart (<span class="header-cart-count">0</span> items)
+              </button>
+            </div>
+          </div>
+
+          <!-- Notice banner -->
+          <div class="banner-dinein-notice">
+            <span class="notice-icon">ℹ️</span>
+            <span><strong>Campus Dine-In Only:</strong> Reserve your food from class. Walk to the canteen at your assigned departure time (11:04 AM), show your digital token QR at the counter, pick up your food, and eat inside the college dining hall.</span>
+          </div>
+
+          <!-- Menu Categories -->
+          <div class="menu-filter-pills">
+            <button class="pill-btn active" onclick="app.filterMenu('all', this)">All Items (13)</button>
+            <button class="pill-btn" onclick="app.filterMenu('breakfast', this)">Breakfast Specials</button>
+            <button class="pill-btn" onclick="app.filterMenu('meals', this)">Meals &amp; Biriyani</button>
+            <button class="pill-btn" onclick="app.filterMenu('snacks', this)">Hot Snacks</button>
+            <button class="pill-btn" onclick="app.filterMenu('beverages', this)">Chai &amp; Drinks</button>
+          </div>
+
+          <!-- Food Cards Grid -->
+          <div class="food-grid" id="student-food-grid">
+            <!-- Rendered dynamically with realistic Kerala food photography -->
+          </div>
+
+          <!-- Floating Sticky Cart Bar -->
+          <div class="floating-cart-bar hidden" id="student-floating-cart">
+            <div class="fc-info">
+              <div class="fc-count"><span id="fc-item-count">0</span> Items Selected</div>
+              <div class="fc-total">Total: <strong id="fc-total-amount">₹0</strong></div>
+            </div>
+            <button class="btn btn-primary" onclick="app.showStudentView('cart')">
+              Proceed to Reservation Summary →
+            </button>
+          </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────
+             STUDENT VIEW: CART & CHECKOUT (Sections 8 & 9)
+             ────────────────────────────────────────────── -->
+        <div id="sview-cart" class="student-view-pane">
+          <div class="view-header-bar">
+            <div>
+              <h2>Your Food Reservation</h2>
+              <p class="text-muted">Review selected items, choose payment method, and generate your smart token.</p>
+            </div>
+            <button class="btn btn-ghost" onclick="app.showStudentView('menu')">
+              ← Add More Items
+            </button>
+          </div>
+
+          <div class="cart-layout-grid">
+            <!-- Left: Cart Items List -->
+            <div class="cart-items-column">
+              <div class="cart-card">
+                <div class="cart-card-header">
+                  <h3>Selected Items</h3>
+                  <button class="btn btn-xs btn-outline-danger" onclick="app.clearCart()">Clear All</button>
+                </div>
+
+                <div id="cart-items-container">
+                  <!-- Rendered dynamically -->
+                </div>
+
+                <div id="cart-empty-state" class="empty-state-box hidden">
+                  <div class="empty-icon">🛒</div>
+                  <h3>Your reservation is empty</h3>
+                  <p>Browse the delicious Kerala canteen menu and add your favorite snacks or meals.</p>
+                  <button class="btn btn-primary" onclick="app.showStudentView('menu')">Browse Menu</button>
+                </div>
+              </div>
+
+              <!-- Important Campus Disclaimer -->
+              <div class="campus-pickup-disclaimer">
+                <div class="cpd-icon">🏛️</div>
+                <div class="cpd-text">
+                  <strong>Physical Canteen Collection:</strong>
+                  Your order will be prepared fresh in the Lourdes Matha kitchen. Walk over at your staggered departure time (<strong>11:04 AM</strong>), present your digital QR token at the pickup counter, and enjoy your meal inside the canteen hall.
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Order Summary & Payment Method (Section 9) -->
+            <div class="cart-checkout-column">
+              <div class="cart-summary-card">
+                <h3>Reservation Summary</h3>
+
+                <div class="summary-line-items" id="summary-line-items">
+                  <!-- Dynamically populated -->
+                </div>
+
+                <div class="summary-calc-block">
+                  <div class="calc-row">
+                    <span>Subtotal</span>
+                    <span id="summary-subtotal">₹0</span>
+                  </div>
+                  <div class="calc-row">
+                    <span>Campus Canteen Subsidy</span>
+                    <span class="text-green">- ₹0 (Subsidized)</span>
+                  </div>
+                  <div class="calc-divider"></div>
+                  <div class="calc-row grand-total-row">
+                    <span>Total Amount</span>
+                    <span class="grand-total-val" id="summary-total">₹0</span>
+                  </div>
+                </div>
+
+                <!-- Payment Selection (Section 9) -->
+                <div class="payment-method-block">
+                  <h4>Select Payment Mode</h4>
+
+                  <div class="payment-options-group">
+                    <label class="payment-choice-label active" id="label-pay-cash" onclick="app.selectPaymentMode('cash')">
+                      <input type="radio" name="paymode" value="cash" checked />
+                      <div class="choice-content">
+                        <div class="choice-title">
+                          <span class="choice-icon">💵</span> Pay Cash at Canteen
+                        </div>
+                        <p class="choice-desc">Pay at the cash counter when collecting your food with your token.</p>
+                      </div>
+                    </label>
+
+                    <label class="payment-choice-label" id="label-pay-upi" onclick="app.selectPaymentMode('upi')">
+                      <input type="radio" name="paymode" value="upi" />
+                      <div class="choice-content">
+                        <div class="choice-title">
+                          <span class="choice-icon">📱</span> UPI / Google Pay
+                        </div>
+                        <p class="choice-desc">Simulated instant UPI payment. Quick QR pickup at the express counter.</p>
+                      </div>
+                    </label>
+                  </div>
+
+                  <!-- UPI Simulation Panel -->
+                  <div class="upi-sim-box hidden" id="upi-sim-panel">
+                    <div class="upi-badge">Demo UPI Gateway</div>
+                    <div class="upi-amount-tag">Amount to Pay: <strong id="upi-pay-amount">₹0</strong></div>
+                    <div class="upi-qr-placeholder">
+                      <div class="upi-fake-qr" id="sim-upi-qrcode">
+                        <canvas id="upi-canvas"></canvas>
+                      </div>
+                      <span class="upi-apps-logos">GPay • PhonePe • Paytm • BHIM</span>
+                    </div>
+                    <button type="button" class="btn btn-success btn-block" id="btn-simulate-upi" onclick="app.simulateUpiPay()">
+                      <span>⚡</span> Simulate Instant UPI Payment
+                    </button>
+                    <div class="upi-success-banner hidden" id="upi-success-indicator">
+                      ✅ Payment Verified via UPI Sandbox!
+                    </div>
+                  </div>
+
+                  <!-- Cash at Canteen Info Panel -->
+                  <div class="cash-info-box" id="cash-info-panel">
+                    <div class="cib-header">💵 PAY AT CANTEEN</div>
+                    <p>Please pay at the cash counter when collecting your food. The reservation will be created immediately with token <strong>SC-127</strong>.</p>
+                  </div>
+                </div>
+
+                <!-- Staggered Departure Reminder in Cart -->
+                <div class="cart-stagger-reminder">
+                  <span>⏰ Assigned Departure: <strong>11:04 AM</strong></span>
+                  <span>🚶 Walking Time: <strong>5 minutes</strong></span>
+                </div>
+
+                <button class="btn btn-primary btn-block btn-lg btn-confirm-selection" id="btn-confirm-order" onclick="app.createOrderReservation()">
+                  ✅ Confirm Food Selection
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────
+             STUDENT VIEW: ORDER CONFIRMATION & TOKEN QR (Section 10)
+             ────────────────────────────────────────────── -->
+        <div id="sview-confirmation" class="student-view-pane">
+          <div class="confirmation-container">
+            <div class="confirmation-success-card">
+              <div class="conf-top-badge">
+                <span class="conf-check-icon">✓</span>
+                <h2>FOOD RESERVATION CONFIRMED</h2>
+                <p>Your meal is logged in the kitchen production queue.</p>
+              </div>
+
+              <!-- DIGITAL TOKEN DISPLAY -->
+              <div class="token-hero-box">
+                <div class="th-label">OFFICIAL DIGITAL TOKEN</div>
+                <div class="th-token-num" id="conf-token-id">SC-127</div>
+                <div class="th-note">Present this token or QR code at pickup counter</div>
+              </div>
+
+              <!-- DYNAMIC QR CODE -->
+              <div class="qr-code-wrapper">
+                <div id="conf-qrcode-container" class="qr-code-canvas-box"></div>
+                <div class="qr-caption">Scan at Canteen Counter Scanner</div>
+              </div>
+
+              <!-- Confirmation Details Table -->
+              <div class="conf-details-table">
+                <div class="cdt-row">
+                  <span class="cdt-label">Student Name</span>
+                  <span class="cdt-val" id="conf-student-name">Amal Krishna</span>
+                </div>
+                <div class="cdt-row">
+                  <span class="cdt-label">Student ID</span>
+                  <span class="cdt-val" id="conf-student-id">LM2026CS101</span>
+                </div>
+                <div class="cdt-row">
+                  <span class="cdt-label">Department</span>
+                  <span class="cdt-val" id="conf-dept">CS (Computer Science)</span>
+                </div>
+                <div class="cdt-row">
+                  <span class="cdt-label">Reserved Items</span>
+                  <span class="cdt-val" id="conf-items-summary">Masala Dosa × 2, Tea × 1</span>
+                </div>
+                <div class="cdt-row highlight">
+                  <span class="cdt-label">Total Amount</span>
+                  <span class="cdt-val text-bold" id="conf-total-amount">₹115</span>
+                </div>
+                <div class="cdt-row stagger-highlight">
+                  <span class="cdt-label">Leave Classroom (Staggered)</span>
+                  <span class="cdt-val text-maroon" id="conf-departure-time">11:04 AM</span>
+                </div>
+                <div class="cdt-row">
+                  <span class="cdt-label">Expected Canteen Arrival</span>
+                  <span class="cdt-val" id="conf-arrival-time">11:09 AM (5-min walk)</span>
+                </div>
+                <div class="cdt-row">
+                  <span class="cdt-label">Payment Method</span>
+                  <span class="cdt-val" id="conf-payment-method">Cash at Canteen</span>
+                </div>
+              </div>
+
+              <div class="conf-action-buttons">
+                <button class="btn btn-primary btn-lg" onclick="app.showStudentView('orders')">
+                  <span>⏱️</span> View Live Order Status &amp; Timer
+                </button>
+                <button class="btn btn-outline" onclick="app.showStudentView('dashboard')">
+                  <span>🏠</span> Return to Dashboard
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────
+             STUDENT VIEW: ORDER STATUS & PREPARATION TIMER (Section 11)
+             ────────────────────────────────────────────── -->
+        <div id="sview-orders" class="student-view-pane">
+          <div class="view-header-bar">
+            <div>
+              <h2>Live Order Status &amp; Tracking</h2>
+              <p class="text-muted">Real-time status progression from kitchen reservation to pickup.</p>
+            </div>
+            <button class="btn btn-sm btn-outline" onclick="app.simulateOrderStep()">
+              <span>⏩</span> Advance Order Status (Demo Simulation)
+            </button>
+          </div>
+
+          <!-- Active Order Tracking Card -->
+          <div class="order-tracking-card-main" id="order-tracking-active-card">
+            <div class="otc-header">
+              <div>
+                <span class="otc-tag">ACTIVE CANTEEN RESERVATION</span>
+                <h3 class="otc-token" id="track-token-display">Token: SC-127</h3>
+              </div>
+              <div class="otc-status-badge" id="track-current-status-badge">
+                🍳 Preparing
+              </div>
+            </div>
+
+            <!-- LIVE PREPARATION COUNTDOWN TIMER (Section 11) -->
+            <div class="prep-countdown-box">
+              <div class="pcb-left">
+                <div class="pcb-icon">👨‍🍳</div>
+                <div>
+                  <div class="pcb-label">ESTIMATED PREPARATION TIME</div>
+                  <div class="pcb-timer" id="prep-countdown-timer">07:35</div>
+                  <div class="pcb-sub">Kitchen staff currently frying &amp; plating your order</div>
+                </div>
+              </div>
+              <div class="pcb-right">
+                <div class="departure-sync-card">
+                  <span class="sync-label">Your Walking Stagger:</span>
+                  <span class="sync-time">Leave class at <strong>11:04 AM</strong></span>
+                  <span class="sync-note">Food will be piping hot when you reach counter at 11:09 AM!</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4-STEP VISUAL TIMELINE (Section 11) -->
+            <div class="status-visual-timeline">
+              <div class="timeline-step completed" id="step-node-1">
+                <div class="step-circle">✓</div>
+                <div class="step-label">Reservation Confirmed</div>
+                <div class="step-time" id="step-time-1">10:55 AM</div>
+              </div>
+
+              <div class="timeline-connector active" id="step-conn-1"></div>
+
+              <div class="timeline-step active" id="step-node-2">
+                <div class="step-circle">🍳</div>
+                <div class="step-label">Preparing</div>
+                <div class="step-time" id="step-time-2">10:57 AM</div>
+              </div>
+
+              <div class="timeline-connector" id="step-conn-2"></div>
+
+              <div class="timeline-step" id="step-node-3">
+                <div class="step-circle">🔔</div>
+                <div class="step-label">Ready for Pickup</div>
+                <div class="step-time" id="step-time-3">Expected 11:06 AM</div>
+              </div>
+
+              <div class="timeline-connector" id="step-conn-3"></div>
+
+              <div class="timeline-step" id="step-node-4">
+                <div class="step-circle">🍽️</div>
+                <div class="step-label">Collected</div>
+                <div class="step-time" id="step-time-4">—</div>
+              </div>
+            </div>
+
+            <!-- READY FOR PICKUP NOTIFICATION BANNER (Section 11) -->
+            <div class="ready-pickup-banner hidden" id="ready-pickup-banner">
+              <div class="rpb-icon">🔔</div>
+              <div class="rpb-content">
+                <div class="rpb-title">NOTIFICATION: YOUR FOOD IS READY FOR PICKUP!</div>
+                <div class="rpb-msg">
+                  Token: <strong id="rpb-token">SC-127</strong> is hot &amp; packaged at Counter 2.
+                  Please proceed to the pickup counter with your QR token.
+                </div>
+              </div>
+              <button class="btn btn-success btn-sm" onclick="app.markOrderCollected()">
+                Mark as Collected
+              </button>
+            </div>
+
+            <!-- Order Items Breakdown -->
+            <div class="active-order-summary-box">
+              <h4>Order Breakdown</h4>
+              <div class="aot-items-list" id="track-order-items-list">
+                <!-- Dynamically populated -->
+              </div>
+              <div class="aot-meta-grid">
+                <div><span>Payment:</span> <strong id="track-order-payment">Cash at Canteen</strong></div>
+                <div><span>Total:</span> <strong class="text-maroon" id="track-order-total">₹115</strong></div>
+                <div><span>Scheduled Departure:</span> <strong>11:04 AM</strong></div>
+                <div><span>Expected Arrival:</span> <strong>11:09 AM</strong></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Order History Table -->
+          <div class="history-section-wrapper">
+            <h3>Previous Orders &amp; Receipts</h3>
+            <div class="table-responsive">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>Token</th>
+                    <th>Date &amp; Time</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="student-history-tbody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────
+             STUDENT VIEW: CANTEEN LIVE STATUS (Sections 17, 19, 20)
+             ────────────────────────────────────────────── -->
+        <div id="sview-canteen-status" class="student-view-pane">
+          <div class="view-header-bar">
+            <div>
+              <h2>Live Canteen Crowd &amp; Capacity Status</h2>
+              <p class="text-muted">Real-time occupancy monitoring and waiting estimations.</p>
+            </div>
+            <button class="btn btn-sm btn-outline" onclick="app.refreshCrowdSimulation()">
+              <span>🔄</span> Refresh Telemetry
+            </button>
+          </div>
+
+          <!-- Live Crowd Gauge & Stats -->
+          <div class="canteen-live-dashboard-grid">
+            <div class="crowd-meter-card-large">
+              <div class="cmc-header">
+                <h3>Current Occupancy</h3>
+                <span class="live-pulse-badge">🔴 LIVE SENSORS</span>
+              </div>
+
+              <!-- Graphic Crowd Bar (Section 19) -->
+              <div class="meter-bar-container">
+                <div class="meter-bar-track">
+                  <div class="meter-bar-progress" id="canteen-meter-bar" style="width: 43%;"></div>
+                </div>
+                <div class="meter-labels">
+                  <span>0%</span>
+                  <span>50%</span>
+                  <span>100% (Cap: 100)</span>
+                </div>
+              </div>
+
+              <div class="meter-status-row">
+                <div class="meter-pct" id="canteen-meter-pct">43%</div>
+                <div class="meter-badge-indicator" id="canteen-meter-badge">
+                  🟢 LOW CROWD
+                </div>
+              </div>
+
+              <div class="capacity-three-split">
+                <div class="split-col">
+                  <span class="sc-label">👥 CURRENT CROWD</span>
+                  <span class="sc-val" id="canteen-count-current">43</span>
+                  <span class="sc-sub">Students seated</span>
+                </div>
+                <div class="split-col">
+                  <span class="sc-label">🪑 AVAILABLE CAPACITY</span>
+                  <span class="sc-val text-green" id="canteen-count-avail">57</span>
+                  <span class="sc-sub">Chairs free</span>
+                </div>
+                <div class="split-col">
+                  <span class="sc-label">⏱️ ESTIMATED WAIT TIME</span>
+                  <span class="sc-val text-orange" id="canteen-count-wait">4 min</span>
+                  <span class="sc-sub">Counter queuing</span>
+                </div>
+              </div>
+
+              <div class="recommended-arrival-callout">
+                <span class="rac-icon">💡</span>
+                <div>
+                  <strong>Recommended Arrival Time:</strong>
+                  Depart classroom at <strong>11:04 AM</strong> to arrive at <strong>11:09 AM</strong>.
+                  At 11:09 AM, the initial rush from 11:00 AM clears, resulting in under 2 minutes waiting!
+                </div>
+              </div>
+            </div>
+
+            <!-- Crowd Flow Chart -->
+            <div class="crowd-flow-chart-card">
+              <h3>Today's Crowd Flow (10:55 AM – 11:20 AM)</h3>
+              <p class="text-muted">Shows how smart departure intervals flatten the dangerous 11:05 AM peak.</p>
+              <div class="chart-canvas-box">
+                <canvas id="student-crowd-chart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Staggering Schedule Table across Departments (Section 6) -->
+          <div class="dept-schedule-card">
+            <div class="dsc-header">
+              <h3>College Department Departure Schedule (11:00 – 11:15 AM Break)</h3>
+              <span class="badge badge-accent">8 Departments Staggered</span>
+            </div>
+            <div class="table-responsive">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>Department</th>
+                    <th>Break Window</th>
+                    <th>Assigned Departure</th>
+                    <th>5-Min Walk Arrival</th>
+                    <th>Registered Students</th>
+                    <th>Crowd Impact</th>
+                  </tr>
+                </thead>
+                <tbody id="student-dept-schedule-tbody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────
+             STUDENT VIEW: NOTIFICATIONS (Section 12)
+             ────────────────────────────────────────────── -->
+        <div id="sview-notifications" class="student-view-pane">
+          <div class="view-header-bar">
+            <div>
+              <h2>Notification Center</h2>
+              <p class="text-muted">Timely alerts regarding your departure, order preparation, and break duration.</p>
+            </div>
+            <div class="view-header-right">
+              <button class="btn btn-sm btn-outline" onclick="app.markAllStudentNotifsRead()">
+                Mark All as Read
+              </button>
+            </div>
+          </div>
+
+          <div class="notifications-feed" id="student-notifs-feed">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────
+             STUDENT VIEW: PROFILE (Section 3)
+             ────────────────────────────────────────────── -->
+        <div id="sview-profile" class="student-view-pane">
+          <div class="view-header-bar">
+            <div>
+              <h2>Student Profile &amp; Campus Identification</h2>
+              <p class="text-muted">Registered academic and canteen schedule credentials.</p>
+            </div>
+          </div>
+
+          <div class="profile-layout-grid">
+            <!-- Left: ID Card Lookalike -->
+            <div class="student-id-badge-card">
+              <div class="sib-college-header">
+                <div class="college-logo-badge small">✝ LMC</div>
+                <div class="sib-college-title">Lourdes Matha College</div>
+              </div>
+              <div class="sib-photo-area">
+                <div class="sib-avatar-photo">AK</div>
+                <div class="sib-name" id="prof-disp-name">Amal Krishna</div>
+                <div class="sib-id" id="prof-disp-id">LM2026CS101</div>
+                <span class="badge badge-primary" id="prof-disp-dept-badge">CS (Computer Science)</span>
+              </div>
+              <div class="sib-card-meta">
+                <div><span>Year:</span> <strong id="prof-disp-year">2nd Year</strong></div>
+                <div><span>Class:</span> <strong id="prof-disp-class">CS-B</strong></div>
+                <div><span>Group:</span> <strong>Group C</strong></div>
+                <div><span>Status:</span> <strong class="text-green">Active Student</strong></div>
+              </div>
+              <div class="sib-barcode" id="profile-barcode-container">
+                <svg id="profile-barcode-svg" class="barcode-svg" role="img" aria-label="Order Token Barcode"></svg>
+                <div class="sib-barcode-token" id="profile-barcode-token">Token: SC-127</div>
+              </div>
+            </div>
+
+            <!-- Right: Schedule & Info Table -->
+            <div class="profile-details-table-card">
+              <h3>Today's Coordinated Canteen Schedule</h3>
+              <div class="info-keyvalue-grid">
+                <div class="ikv-item">
+                  <span class="ikv-label">Student Name:</span>
+                  <span class="ikv-val" id="prof-val-name">Amal Krishna</span>
+                </div>
+                <div class="ikv-item">
+                  <span class="ikv-label">Student ID Number:</span>
+                  <span class="ikv-val" id="prof-val-id">LM2026CS101</span>
+                </div>
+                <div class="ikv-item">
+                  <span class="ikv-label">Department:</span>
+                  <span class="ikv-val" id="prof-val-dept">CS (Computer Science)</span>
+                </div>
+                <div class="ikv-item">
+                  <span class="ikv-label">Academic Year:</span>
+                  <span class="ikv-val" id="prof-val-year">2nd Year (Semester 4)</span>
+                </div>
+                <div class="ikv-item">
+                  <span class="ikv-label">Assigned Break Time:</span>
+                  <span class="ikv-val">11:00 AM – 11:15 AM (Recess)</span>
+                </div>
+                <div class="ikv-item highlight-box">
+                  <span class="ikv-label">Assigned Departure Time:</span>
+                  <span class="ikv-val text-bold" id="prof-val-departure">11:04 AM</span>
+                </div>
+                <div class="ikv-item highlight-box">
+                  <span class="ikv-label">Assigned Canteen Arrival:</span>
+                  <span class="ikv-val text-bold" id="prof-val-arrival">11:09 AM</span>
+                </div>
+                <div class="ikv-item">
+                  <span class="ikv-label">Classroom Walking Time:</span>
+                  <span class="ikv-val">5 Minutes (CS Academic Block)</span>
+                </div>
+              </div>
+
+              <div class="profile-dept-selector-box">
+                <h4>Switch Department (Demo Preview)</h4>
+                <p class="text-muted">Simulate departure scheduling for different departments:</p>
+                <div class="dept-quick-buttons" id="dept-switch-buttons">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       4. STAFF PORTAL (APP LAYOUT - Sections 13 & 14)
+       ======================================================== -->
+  <div id="portal-staff" class="portal-layout hidden">
+    <header class="portal-header staff-theme">
+      <div class="portal-header-left">
+        <button class="btn-icon mobile-menu-btn" onclick="app.toggleSidebar('staff')">☰</button>
+        <div class="header-logo-compact">
+          <span class="logo-box staff-logo-box">👨‍🍳 LMC</span>
+          <span class="logo-title">Kitchen &amp; Counter Operations</span>
+        </div>
+        <span class="header-role-badge staff-badge">Staff Dashboard</span>
+      </div>
+
+      <div class="portal-header-right">
+        <div class="header-schedule-pill">
+          <span class="pill-dot orange"></span>
+          <span>Break Active: <strong>11:00 – 11:15 AM</strong></span>
+        </div>
+
+        <div class="header-user-pill">
+          <div class="avatar-circle staff-av">RN</div>
+          <div class="user-pill-text">
+            <span class="user-pill-name">Ramesh Nair</span>
+            <span class="user-pill-sub">Canteen Supervisor</span>
+          </div>
+        </div>
+
+        <button class="btn btn-outline-danger btn-sm" onclick="app.logout()">
+          <span>🚪</span> Logout
+        </button>
+      </div>
+    </header>
+
+    <div class="portal-body">
+      <!-- Staff Sidebar -->
+      <aside class="portal-sidebar staff-sidebar" id="staff-sidebar">
+        <div class="sidebar-user-summary">
+          <div class="avatar-circle large staff-av">RN</div>
+          <div class="sidebar-user-name">Ramesh Nair</div>
+          <div class="sidebar-user-dept">Canteen Operations Manager</div>
+          <div class="staff-role-note">Operational Focus • Kitchen Queue</div>
+        </div>
+
+        <nav class="sidebar-nav-list">
+          <button class="sidebar-nav-item active" id="sfnav-dash" onclick="app.showStaffView('dashboard')">
+            <span class="snav-icon">📊</span> <span>Operations Overview</span>
+          </button>
+          <button class="sidebar-nav-item" id="sfnav-incoming" onclick="app.showStaffView('incoming')">
+            <span class="snav-icon">📥</span> <span>Incoming Orders Queue</span>
+            <span class="snav-badge staff-badge-red" id="sf-pending-badge">8</span>
+          </button>
+          <button class="sidebar-nav-item" id="sfnav-demand" onclick="app.showStaffView('demand')">
+            <span class="snav-icon">🍛</span> <span>Food Demand Prediction</span>
+          </button>
+          <button class="sidebar-nav-item" id="sfnav-canteen" onclick="app.showStaffView('canteen')">
+            <span class="snav-icon">👥</span> <span>Live Hall Crowd</span>
+          </button>
+        </nav>
+
+        <div class="staff-sidebar-actions">
+          <button class="btn btn-sm btn-primary btn-block" onclick="app.simulateRandomNewOrder()">
+            <span>+</span> Simulate New Incoming Order
+          </button>
+        </div>
+      </aside>
+
+      <!-- Staff Main Content -->
+      <main class="portal-main">
+
+        <!-- ──────────────────────────────────────────────
+             STAFF VIEW: DASHBOARD (Section 13)
+             ────────────────────────────────────────────── -->
+        <div id="sfview-dashboard" class="staff-view-pane active">
+          <div class="view-header-bar">
+            <div>
+              <h2>Daily Canteen Operations Hub</h2>
+              <p class="text-muted">Real-time order statuses, incoming queue, and break preparation.</p>
+            </div>
+            <div class="view-header-right">
+              <span class="live-clock-tag" id="staff-live-clock">11:02:14 AM</span>
+            </div>
+          </div>
+
+          <!-- Section 13 Top Operational Metric Cards -->
+          <div class="staff-metric-strip">
+            <div class="smetric-card">
+              <div class="smetric-icon">📋</div>
+              <div class="smetric-info">
+                <div class="smetric-label">Today's Orders</div>
+                <div class="smetric-value" id="sf-stat-total">186</div>
+                <div class="smetric-sub">Total incoming today</div>
+              </div>
+            </div>
+            <div class="smetric-card card-orange">
+              <div class="smetric-icon">🍳</div>
+              <div class="smetric-info">
+                <div class="smetric-label">Preparing in Kitchen</div>
+                <div class="smetric-value" id="sf-stat-preparing">23</div>
+                <div class="smetric-sub">On stoves &amp; griddles</div>
+              </div>
+            </div>
+            <div class="smetric-card card-green">
+              <div class="smetric-icon">🔔</div>
+              <div class="smetric-info">
+                <div class="smetric-label">Ready at Counter</div>
+                <div class="smetric-value" id="sf-stat-ready">12</div>
+                <div class="smetric-sub">Awaiting student pickup</div>
+              </div>
+            </div>
+            <div class="smetric-card card-blue">
+              <div class="smetric-icon">✅</div>
+              <div class="smetric-info">
+                <div class="smetric-label">Completed &amp; Eaten</div>
+                <div class="smetric-value" id="sf-stat-completed">151</div>
+                <div class="smetric-sub">Successfully collected</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Incoming Stream & Stagger Flow -->
+          <div class="staff-dash-dual-grid">
+            <!-- Left: Incoming Live Queue -->
+            <div class="staff-orders-stream-card">
+              <div class="sosc-header">
+                <h3>Live Order Queue (Action Required)</h3>
+                <span class="badge badge-accent">Live Sync</span>
+              </div>
+              <div class="orders-stream-list" id="sf-live-orders-stream">
+                <!-- Rendered by JS -->
+              </div>
+            </div>
+
+            <!-- Right: Department Stagger Arrival Monitor -->
+            <div class="stagger-arrival-monitor-card">
+              <div class="samc-header">
+                <h3>Department Arrival Waves (11:00 – 11:15 AM)</h3>
+                <span class="badge badge-primary">5-Min Walk Offset</span>
+              </div>
+              <div class="waves-timeline-list" id="sf-arrival-waves-list">
+                <!-- Rendered by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────
+             STAFF VIEW: INCOMING ORDERS (Section 13)
+             ────────────────────────────────────────────── -->
+        <div id="sfview-incoming" class="staff-view-pane">
+          <div class="view-header-bar">
+            <div>
+              <h2>Order Management &amp; Kitchen Production</h2>
+              <p class="text-muted">Advance orders through stages: Pending → Preparing → Ready → Collected.</p>
+            </div>
+            <div class="filter-btn-group">
+              <button class="filter-pill active" onclick="app.filterStaffQueue('all', this)">All (Live)</button>
+              <button class="filter-pill" onclick="app.filterStaffQueue('pending', this)">Pending</button>
+              <button class="filter-pill" onclick="app.filterStaffQueue('preparing', this)">Preparing (23)</button>
+              <button class="filter-pill" onclick="app.filterStaffQueue('ready', this)">Ready (12)</button>
+            </div>
+          </div>
+
+          <!-- Order Cards Grid -->
+          <div class="staff-orders-card-grid" id="sf-incoming-cards-grid">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────
+             STAFF VIEW: FOOD DEMAND SCREEN (Section 14)
+             ────────────────────────────────────────────── -->
+        <div id="sfview-demand" class="staff-view-pane">
+          <div class="view-header-bar">
+            <div>
+              <h2>Expected Food Demand (Kitchen Production Plan)</h2>
+              <p class="text-muted">Upcoming Break: <strong>11:00 AM – 11:15 AM</strong> &bull; Expected Students: <strong>120</strong></p>
+            </div>
+            <button class="btn btn-sm btn-primary" onclick="app.printKitchenSheet()">
+              <span>🖨️</span> Print Kitchen Prep Sheet
+            </button>
+          </div>
+
+          <!-- Section 14 Demand Forecast Display -->
+          <div class="demand-planning-grid">
+            <div class="demand-table-card">
+              <div class="dtc-header">
+                <h3>Recommended Preparation Quantities</h3>
+                <span class="badge badge-accent">Calculated from Student Reservations</span>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table-custom">
+                  <thead>
+                    <tr>
+                      <th>Food Item</th>
+                      <th>Expected Demand</th>
+                      <th>Recommended Prep</th>
+                      <th>Current Ready Stock</th>
+                      <th>Kitchen Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sf-demand-table-tbody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Demand Chart -->
+            <div class="demand-chart-card">
+              <h3>Expected Demand vs Prep Capacity</h3>
+              <div class="chart-canvas-box">
+                <canvas id="staff-demand-chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────
+             STAFF VIEW: CANTEEN STATUS
+             ────────────────────────────────────────────── -->
+        <div id="sfview-canteen" class="staff-view-pane">
+          <div class="view-header-bar">
+            <div>
+              <h2>Hall Crowd &amp; Counter Capacity Management</h2>
+              <p class="text-muted">Monitor seated diners and pickup counter throughput.</p>
+            </div>
+          </div>
+
+          <div class="staff-crowd-metrics-row">
+            <div class="scm-box">
+              <span class="scm-title">HALL OCCUPANCY</span>
+              <span class="scm-num" id="sf-crowd-live-num">43 / 100</span>
+              <span class="scm-status text-green">🟢 LOW CROWD</span>
+            </div>
+            <div class="scm-box">
+              <span class="scm-title">AVERAGE COUNTER SERVE TIME</span>
+              <span class="scm-num">28 Seconds</span>
+              <span class="scm-status text-blue">Optimal with QR</span>
+            </div>
+            <div class="scm-box">
+              <span class="scm-title">NEXT PEAK WAVE</span>
+              <span class="scm-num">11:06 AM</span>
+              <span class="scm-status text-orange">EC Department (90 students)</span>
+            </div>
+          </div>
+
+          <div class="chart-canvas-box card" style="margin-top: 1.5rem; padding: 1.5rem;">
+            <h3>Live Hall Density vs Maximum Threshold</h3>
+            <canvas id="staff-crowd-chart"></canvas>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       5. ADMIN PORTAL (APP LAYOUT - Sections 15, 16, 17, 18)
+       ======================================================== -->
+  <div id="portal-admin" class="portal-layout hidden">
+    <header class="portal-header admin-theme">
+      <div class="portal-header-left">
+        <button class="btn-icon mobile-menu-btn" onclick="app.toggleSidebar('admin')">☰</button>
+        <div class="header-logo-compact">
+          <span class="logo-box admin-logo-box">🛡️ LMC</span>
+          <span class="logo-title">Executive Administration</span>
+        </div>
+        <span class="header-role-badge admin-badge">Executive Admin</span>
+      </div>
+
+      <div class="portal-header-right">
+        <div class="header-schedule-pill">
+          <span class="pill-dot blue"></span>
+          <span>Analytics Live &bull; <strong class="demo-tag">PROTOTYPE DEMO DATA</strong></span>
+        </div>
+
+        <div class="header-user-pill">
+          <div class="avatar-circle admin-av">JK</div>
+          <div class="user-pill-text">
+            <span class="user-pill-name">Dr. Jacob Kurian</span>
+            <span class="user-pill-sub">Canteen Executive Director</span>
+          </div>
+        </div>
+
+        <button class="btn btn-outline-danger btn-sm" onclick="app.logout()">
+          <span>🚪</span> Logout
+        </button>
+      </div>
+    </header>
+
+    <div class="portal-body">
+      <!-- Admin Sidebar Nav (Section 23) -->
+      <aside class="portal-sidebar admin-sidebar" id="admin-sidebar">
+        <div class="sidebar-user-summary">
+          <div class="avatar-circle large admin-av">JK</div>
+          <div class="sidebar-user-name">Dr. Jacob Kurian</div>
+          <div class="sidebar-user-dept">Executive Canteen Board</div>
+          <div class="admin-role-note">Full Financial &amp; Operational Governance</div>
+        </div>
+
+        <nav class="sidebar-nav-list">
+          <button class="sidebar-nav-item active" id="adnav-dash" onclick="app.showAdminView('dashboard')">
+            <span class="snav-icon">📊</span> <span>Executive Dashboard</span>
+          </button>
+          <button class="sidebar-nav-item" id="adnav-orders" onclick="app.showAdminView('orders')">
+            <span class="snav-icon">📋</span> <span>All Campus Orders</span>
+          </button>
+          <button class="sidebar-nav-item" id="adnav-menu" onclick="app.showAdminView('menu')">
+            <span class="snav-icon">🍽️</span> <span>Menu Management</span>
+          </button>
+          <button class="sidebar-nav-item" id="adnav-demand" onclick="app.showAdminView('demand')">
+            <span class="snav-icon">🍛</span> <span>Food Demand Analytics</span>
+          </button>
+          <button class="sidebar-nav-item" id="adnav-crowd" onclick="app.showAdminView('crowd')">
+            <span class="snav-icon">👥</span> <span>Crowd Analytics</span>
+          </button>
+          <button class="sidebar-nav-item" id="adnav-revenue" onclick="app.showAdminView('revenue')">
+            <span class="snav-icon">💰</span> <span>Revenue Tracking</span>
+          </button>
+          <button class="sidebar-nav-item" id="adnav-expenses" onclick="app.showAdminView('expenses')">
+            <span class="snav-icon">💸</span> <span>Expense Breakdown</span>
+          </button>
+          <button class="sidebar-nav-item" id="adnav-pl" onclick="app.showAdminView('pl')">
+            <span class="snav-icon">📈</span> <span>Profit &amp; Loss Statement</span>
+          </button>
+          <button class="sidebar-nav-item" id="adnav-users" onclick="app.showAdminView('users')">
+            <span class="snav-icon">👤</span> <span>Campus Users &amp; Roles</span>
+          </button>
+          <button class="sidebar-nav-item" id="adnav-settings" onclick="app.showAdminView('settings')">
+            <span class="snav-icon">⚙️</span> <span>System &amp; Capacity Config</span>
+          </button>
+        </nav>
+      </aside>
+
+      <!-- Admin Main Content -->
+      <main class="portal-main">
+
+        <!-- ──────────────────────────────────────────────
+             ADMIN VIEW: DASHBOARD (Section 15)
+             ────────────────────────────────────────────── -->
+        <div id="adview-dashboard" class="admin-view-pane active">
+          <div class="view-header-bar">
+            <div>
+              <h2>Executive Operations &amp; Financial Overview</h2>
+              <p class="text-muted">Comprehensive business intelligence across dining facilities &bull; <span class="demo-tag">PROTOTYPE DEMO VALUES</span></p>
+            </div>
+            <div class="view-header-right">
+              <span class="badge badge-accent">Daily Audit: 25 Sep 2026</span>
+            </div>
+          </div>
+
+          <!-- Section 15: Main Admin Cards -->
+          <div class="admin-main-cards-grid">
+            <div class="am-card card-revenue">
+              <div class="am-icon">💰</div>
+              <div class="am-info">
+                <div class="am-title">Today's Revenue</div>
+                <div class="am-value">₹18,450</div>
+                <div class="am-trend positive">↑ 14% vs. last Thursday</div>
+              </div>
+            </div>
+
+            <div class="am-card card-expense">
+              <div class="am-icon">💸</div>
+              <div class="am-info">
+                <div class="am-title">Today's Expenses</div>
+                <div class="am-value">₹11,250</div>
+                <div class="am-trend neutral">Food cost + kitchen staff</div>
+              </div>
+            </div>
+
+            <div class="am-card card-profit">
+              <div class="am-icon">📈</div>
+              <div class="am-info">
+                <div class="am-title">Today's Profit</div>
+                <div class="am-value text-green">₹7,200</div>
+                <div class="am-trend positive">39% net operating margin</div>
+              </div>
+            </div>
+
+            <div class="am-card card-loss">
+              <div class="am-icon">📉</div>
+              <div class="am-info">
+                <div class="am-title">Today's Loss / Margin Gap</div>
+                <div class="am-value">₹0</div>
+                <div class="am-trend neutral">Net positive operations</div>
+              </div>
+            </div>
+
+            <div class="am-card">
+              <div class="am-icon">📋</div>
+              <div class="am-info">
+                <div class="am-title">Total Orders</div>
+                <div class="am-value">326</div>
+                <div class="am-trend">Breakfast + Lunch cycles</div>
+              </div>
+            </div>
+
+            <div class="am-card">
+              <div class="am-icon">🎓</div>
+              <div class="am-info">
+                <div class="am-title">Total Students Served</div>
+                <div class="am-value">301</div>
+                <div class="am-trend">Across 8 departments</div>
+              </div>
+            </div>
+
+            <div class="am-card card-waste">
+              <div class="am-icon">♻️</div>
+              <div class="am-info">
+                <div class="am-title">Food Waste</div>
+                <div class="am-value text-green">8%</div>
+                <div class="am-trend positive">↓ Down from 24% before system</div>
+              </div>
+            </div>
+
+            <div class="am-card">
+              <div class="am-icon">⏱️</div>
+              <div class="am-info">
+                <div class="am-title">Peak Canteen Time</div>
+                <div class="am-value text-orange">11:05 AM</div>
+                <div class="am-trend">65 concurrent students (Capacity: 100)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Admin Charts Row -->
+          <div class="admin-charts-pair-grid">
+            <div class="chart-card">
+              <div class="cc-header">
+                <h3>Weekly Revenue &amp; Expenses Trend</h3>
+                <span class="badge badge-accent">Last 7 Days</span>
+              </div>
+              <div class="chart-canvas-box">
+                <canvas id="ad-rev-chart"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="cc-header">
+                <h3>Today's Crowd Staggering Comparison</h3>
+                <span class="badge badge-primary">Smart Stagger Effect</span>
+              </div>
+              <div class="chart-canvas-box">
+                <canvas id="ad-crowd-compare-chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────
+             ADMIN VIEW: ALL ORDERS
+             ────────────────────────────────────────────── -->
+        <div id="adview-orders" class="admin-view-pane">
+          <div class="view-header-bar">
+            <div>
+              <h2>Campus Canteen Master Orders Ledger</h2>
+              <p class="text-muted">All student reservations with audit trail and token verification.</p>
+            </div>
+          </div>
+
+          <div class="card table-card-styled">
+            <div class="table-responsive">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>Token ID</th>
+                    <th>Student Name</th>
+                    <th>Dept &amp; ID</th>
+                    <th>Food Items</th>
+                    <th>Total</th>
+                    <th>Payment Mode</th>
+                    <th>Status</th>
+                    <th>Stagger Window</th>
+                  </tr>
+                </thead>
+                <tbody id="ad-orders-master-tbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────
+             ADMIN VIEW: MENU MANAGEMENT
+             ────────────────────────────────────────────── -->
+        <div id="adview-menu" class="admin-view-pane">
+          <div class="view-header-bar">
+            <div>
+              <h2>Menu Items &amp; Pricing Management</h2>
+              <p class="text-muted">Control prices, availability, descriptions, and kitchen stocks.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="app.openAddMenuModal()">
+              <span>+</span> Add New Food Item
+            </button>
+          </div>
+
+          <div class="admin-menu-table-wrapper card">
+            <div class="table-responsive">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>Image</th>
+                    <th>Item Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Daily Stock</th>
+                    <th>Availability</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="ad-menu-table-tbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────
+             ADMIN VIEW: FOOD DEMAND ANALYTICS (Section 18)
+             ────────────────────────────────────────────── -->
+        <div id="adview-demand" class="admin-view-pane">
+          <div class="view-header-bar">
+            <div>
+              <h2>Food Demand &amp; Waste Analytics (Section 18)</h2>
+              <p class="text-muted">Comparing Planned vs. Prepared vs. Sold vs. Remaining vs. Food Waste &bull; <span class="demo-tag">DEMO VALUES</span></p>
+            </div>
+          </div>
+
+          <!-- Section 18 Table -->
+          <div class="card table-card-styled">
+            <div class="table-responsive">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>Food Item</th>
+                    <th>Planned</th>
+                    <th>Prepared</th>
+                    <th>Sold Quantity</th>
+                    <th>Remaining</th>
+                    <th>Waste %</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="ad-demand-analytics-tbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="chart-canvas-box card" style="margin-top: 1.5rem; padding: 1.5rem;">
+            <h3>Planned vs Sold vs Remaining (Item-Level Comparison)</h3>
+            <canvas id="ad-demand-bar-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────
+             ADMIN VIEW: CROWD ANALYTICS (Section 17)
+             ────────────────────────────────────────────── -->
+        <div id="adview-crowd" class="admin-view-pane">
+          <div class="view-header-bar">
+            <div>
+              <h2>Crowd Density &amp; Staggering Impact Analytics (Section 17)</h2>
+              <p class="text-muted">Demonstrating how the Smart Canteen reduces sudden crowding &bull; <span class="demo-tag">DEMO VALUES</span></p>
+            </div>
+          </div>
+
+          <div class="crowd-analytics-metric-bar">
+            <div class="camb-card">
+              <span class="camb-title">CURRENT CROWD</span>
+              <span class="camb-val">43 Students</span>
+            </div>
+            <div class="camb-card">
+              <span class="camb-title">CANTEEN CAPACITY</span>
+              <span class="camb-val">100 Students</span>
+            </div>
+            <div class="camb-card">
+              <span class="camb-title">CAPACITY USED</span>
+              <span class="camb-val text-green">43%</span>
+            </div>
+            <div class="camb-card">
+              <span class="camb-title">ESTIMATED WAITING</span>
+              <span class="camb-val">4 Minutes</span>
+            </div>
+            <div class="camb-card">
+              <span class="camb-title">PEAK TIME</span>
+              <span class="camb-val text-orange">11:05 AM</span>
+            </div>
+          </div>
+
+          <!-- Time vs Number of Students (Section 17) -->
+          <div class="chart-card card" style="padding: 1.5rem; margin-top: 1.5rem;">
+            <div class="cc-header">
+              <h3>Time vs. Number of Students (10:55 AM – 11:15 AM)</h3>
+              <span class="badge badge-accent">10:55→20 | 11:00→35 | 11:05→65 | 11:10→40 | 11:15→15</span>
+            </div>
+            <p class="text-muted" style="margin-bottom: 1rem;">
+              The red dotted line illustrates how crowd used to spike to 180+ without staggering, exceeding the 100-student capacity. The green line shows the controlled smart curve.
+            </p>
+            <div class="chart-canvas-box">
+              <canvas id="ad-crowd-timeline-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────
+             ADMIN VIEW: REVENUE
+             ────────────────────────────────────────────── -->
+        <div id="adview-revenue" class="admin-view-pane">
+          <div class="view-header-bar">
+            <div>
+              <h2>Campus Canteen Revenue Analytics</h2>
+              <p class="text-muted">Breakdown by payment modes, categories, and meal slots.</p>
+            </div>
+          </div>
+
+          <div class="revenue-summary-cards">
+            <div class="rsc-box">
+              <span>Today's Total</span>
+              <strong>₹18,450</strong>
+            </div>
+            <div class="rsc-box">
+              <span>UPI / Online Payments</span>
+              <strong>₹12,650 (68.5%)</strong>
+            </div>
+            <div class="rsc-box">
+              <span>Cash at Canteen</span>
+              <strong>₹5,800 (31.5%)</strong>
+            </div>
+            <div class="rsc-box">
+              <span>Monthly Projected</span>
+              <strong>₹4,85,600</strong>
+            </div>
+          </div>
+
+          <div class="chart-card card" style="margin-top: 1.5rem; padding: 1.5rem;">
+            <h3>Revenue by Food Item Category</h3>
+            <canvas id="ad-rev-category-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────
+             ADMIN VIEW: EXPENSES
+             ────────────────────────────────────────────── -->
+        <div id="adview-expenses" class="admin-view-pane">
+          <div class="view-header-bar">
+            <div>
+              <h2>Operating Expense Breakdown</h2>
+              <p class="text-muted">Daily and monthly cost structures for kitchen, logistics, and power.</p>
+            </div>
+          </div>
+
+          <div class="card table-card-styled">
+            <div class="table-responsive">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>Expense Category</th>
+                    <th>Daily Cost</th>
+                    <th>Monthly Projected</th>
+                    <th>% of Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Food Cost (Raw Materials, Vegetables, Poultry)</td><td>₹7,800</td><td>₹2,02,800</td><td>69.3%</td></tr>
+                  <tr><td>Kitchen &amp; Cleaning Staff Salaries</td><td>₹1,500</td><td>₹45,000</td><td>13.3%</td></tr>
+                  <tr><td>Electricity &amp; Refrigerator Power</td><td>₹850</td><td>₹25,500</td><td>7.6%</td></tr>
+                  <tr><td>Equipment Maintenance &amp; Gas Cylinders</td><td>₹600</td><td>₹18,000</td><td>5.3%</td></tr>
+                  <tr><td>Packaging, Napkins &amp; Other Sundries</td><td>₹500</td><td>₹15,000</td><td>4.4%</td></tr>
+                  <tr class="table-row-highlight">
+                    <td><strong>Total Operating Expenses</strong></td>
+                    <td><strong>₹11,250</strong></td>
+                    <td><strong>₹3,06,300</strong></td>
+                    <td><strong>100.0%</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────
+             ADMIN VIEW: PROFIT & LOSS (Section 16)
+             ────────────────────────────────────────────── -->
+        <div id="adview-pl" class="admin-view-pane">
+          <div class="view-header-bar">
+            <div>
+              <h2>Profit &amp; Loss Statement (Section 16)</h2>
+              <p class="text-muted">Detailed financial performance, item-level sales, and waste analysis &bull; <span class="demo-tag">DEMO VALUES</span></p>
+            </div>
+          </div>
+
+          <div class="pl-statement-card card">
+            <div class="pl-header">
+              <h3>Lourdes Matha College Canteen &bull; P&amp;L Statement</h3>
+              <span>Financial Year 2026 &bull; Daily Audit</span>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table-custom">
+                <tbody>
+                  <tr class="pl-group-header"><td colspan="2">1. REVENUE (INFLOW)</td></tr>
+                  <tr><td>Gross Food Sales (Breakfast, Snacks &amp; Meals)</td><td class="text-right">₹17,850</td></tr>
+                  <tr><td>Beverages Sales (Tea, Coffee, Lime &amp; Juice)</td><td class="text-right">₹600</td></tr>
+                  <tr class="table-row-subtotal"><td><strong>TOTAL REVENUE</strong></td><td class="text-right"><strong>₹18,450</strong></td></tr>
+
+                  <tr class="pl-group-header"><td colspan="2">2. OPERATING EXPENSES (OUTFLOW)</td></tr>
+                  <tr><td>Raw Material &amp; Food Cost</td><td class="text-right">₹7,800</td></tr>
+                  <tr><td>Staff Wages (Kitchen + Counter Staff)</td><td class="text-right">₹1,500</td></tr>
+                  <tr><td>Electricity &amp; Commercial LPG</td><td class="text-right">₹850</td></tr>
+                  <tr><td>Maintenance &amp; Sanitation</td><td class="text-right">₹600</td></tr>
+                  <tr><td>Other Incidentals</td><td class="text-right">₹500</td></tr>
+                  <tr class="table-row-subtotal"><td><strong>TOTAL EXPENSES</strong></td><td class="text-right"><strong>₹11,250</strong></td></tr>
+
+                  <tr class="table-row-netprofit">
+                    <td><strong>3. NET OPERATING PROFIT</strong></td>
+                    <td class="text-right text-green"><strong>₹7,200 (39.0% Margin)</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Section 16 Bottom Food Performance Cards -->
+          <div class="pl-food-performance-row">
+            <div class="fp-card card-best">
+              <span class="fp-badge">🏆 Most Sold Food</span>
+              <h4>Masala Dosa</h4>
+              <p>37 servings sold &bull; ₹1,850 generated</p>
+            </div>
+            <div class="fp-card card-least">
+              <span class="fp-badge">📉 Least Sold Food</span>
+              <h4>Samosa</h4>
+              <p>12 servings sold &bull; ₹240 generated</p>
+            </div>
+            <div class="fp-card card-waste">
+              <span class="fp-badge">♻️ Food Waste Rate</span>
+              <h4>8% Waste</h4>
+              <p>Significantly below the 20% campus target</p>
+            </div>
+            <div class="fp-card card-prepared">
+              <span class="fp-badge">📦 Total Food Prepared</span>
+              <h4>352 Portions</h4>
+              <p>326 portions sold to students</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────
+             ADMIN VIEW: USERS
+             ────────────────────────────────────────────── -->
+        <div id="adview-users" class="admin-view-pane">
+          <div class="view-header-bar">
+            <div>
+              <h2>Campus User Accounts &amp; Access Roles</h2>
+              <p class="text-muted">Registered student, staff, and administrator directories &bull; <span class="demo-tag">DEMO VALUES</span></p>
+            </div>
+          </div>
+
+          <div class="card table-card-styled">
+            <div class="table-responsive">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>User ID</th>
+                    <th>Full Name</th>
+                    <th>Role</th>
+                    <th>Department</th>
+                    <th>Year / Designation</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="ad-users-tbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ──────────────────────────────────────────────
+             ADMIN VIEW: SETTINGS & CAPACITY (Section 6, 20)
+             ────────────────────────────────────────────── -->
+        <div id="adview-settings" class="admin-view-pane">
+          <div class="view-header-bar">
+            <div>
+              <h2>Canteen Capacity &amp; Stagger Algorithm Configuration</h2>
+              <p class="text-muted">Configure hall capacity, departure intervals, and walking offsets.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="app.saveCapacitySettings()">
+              Save Settings
+            </button>
+          </div>
+
+          <div class="settings-cards-grid">
+            <div class="settings-card card">
+              <h3>Hall Capacity Settings (Section 20)</h3>
+              <div class="form-group">
+                <label>Maximum Canteen Seating Capacity</label>
+                <input type="number" id="cfg-capacity" class="form-control" value="100" />
+                <small class="text-muted">Current capacity: 100 students</small>
+              </div>
+              <div class="form-group">
+                <label>Estimated Walking Time from Classrooms</label>
+                <input type="number" id="cfg-walk-time" class="form-control" value="5" />
+                <small class="text-muted">In minutes (Default: 5 mins)</small>
+              </div>
+              <div class="form-group">
+                <label>Departure Interval per Stagger Group</label>
+                <input type="number" id="cfg-interval" class="form-control" value="2" />
+                <small class="text-muted">In minutes (Default: 2-3 mins between batches)</small>
+              </div>
+            </div>
+
+            <div class="settings-card card">
+              <h3>Recess Schedule Windows</h3>
+              <div class="form-group">
+                <label>Morning Break Start</label>
+                <input type="text" class="form-control" value="11:00 AM" />
+              </div>
+              <div class="form-group">
+                <label>Morning Break End</label>
+                <input type="text" class="form-control" value="11:15 AM" />
+              </div>
+              <div class="form-group">
+                <label>Lunch Break Window</label>
+                <input type="text" class="form-control" value="1:00 PM – 1:45 PM" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Department Departure Timings Management (Admin RBAC Only) -->
+          <div class="card table-card-styled" style="margin-top: 1.5rem;">
+            <div class="view-header-bar" style="padding: 1rem 1.5rem 0.5rem; margin-bottom: 0;">
+              <div>
+                <h3 style="font-size: 1.15rem; margin-bottom: 0.25rem;">Department Departure Timings Management (Admin Only)</h3>
+                <p class="text-muted" style="font-size: 0.85rem;">Configure campus departure windows. Updates are RBAC-protected and synchronize across all student dashboards.</p>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>Department</th>
+                    <th>Stagger Group</th>
+                    <th>Departure Window</th>
+                    <th>Expected Arrival</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="ad-dept-schedule-tbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       TOAST NOTIFICATION COMPONENT
+       ======================================================== -->
+  <div id="app-toast" class="app-toast-container hidden">
+    <div class="toast-body">
+      <span class="toast-icon" id="toast-icon">🔔</span>
+      <span class="toast-message" id="toast-message">Notification message</span>
+    </div>
+  </div>
+
+  <!-- Load Data and Application Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
