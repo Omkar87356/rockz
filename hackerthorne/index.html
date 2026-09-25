@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HackerThorne | AI-Powered Hackathon Squad Finder & Collaboration Hub</title>
+    <meta name="description" content="Find the perfect hackathon teammates, fill missing squad roles, collaborate on tasks, and pitch winning projects with AI smart-matching.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./index.css">
+</head>
+<body>
+    <!-- App Container -->
+    <div id="app" class="app-container">
+        <!-- Top Navigation -->
+        <header class="navbar" id="main-nav">
+            <div class="nav-brand">
+                <div class="brand-icon">
+                    <span class="icon-sparkle">⚡</span>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">HACKER<span class="brand-highlight">THORNE</span></span>
+                    <span class="brand-tagline">Squad Match & Collab</span>
+                </div>
+            </div>
+
+            <nav class="nav-links">
+                <button class="nav-tab active" data-view="projects" id="tab-projects">
+                    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v1"/><rect x="8" y="2" width="14" height="14" rx="2"/><path d="M12 12h6"/><path d="M15 9v6"/></svg>
+                    <span>Squads & Projects</span>
+                </button>
+                <button class="nav-tab" data-view="students" id="tab-students">
+                    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span>Talent Network</span>
+                </button>
+                <button class="nav-tab" data-view="matchmaker" id="tab-matchmaker">
+                    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span>AI Squad Builder</span>
+                    <span class="nav-badge pulse">AI</span>
+                </button>
+                <button class="nav-tab" data-view="applications" id="tab-applications">
+                    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    <span>Inbox & Requests</span>
+                    <span class="nav-counter" id="inbox-badge-count">2</span>
+                </button>
+                <button class="nav-tab" data-view="chat" id="tab-chat">
+                    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span>Team Chat</span>
+                    <span class="nav-counter active" id="chat-badge-count">3</span>
+                </button>
+            </nav>
+
+            <div class="nav-actions">
+                <button class="btn btn-primary" id="btn-open-create-project">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <span>Create Project</span>
+                </button>
+
+                <!-- Current User Switcher -->
+                <div class="user-perspective-selector">
+                    <label class="user-select-label" for="active-user-select">Acting As:</label>
+                    <div class="user-select-box">
+                        <img id="current-user-avatar" class="avatar-small" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" alt="Current User">
+                        <select id="active-user-select" class="user-select-dropdown">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn-icon" id="btn-reset-data" title="Reset Demo Data">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Hackathon Banner / Stats Header -->
+        <section class="hero-strip" id="hero-banner">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="live-dot"></span>
+                    <span>2026 Fall Hackathon Season Live</span>
+                </div>
+                <h1 class="hero-heading">Build Your Winning Squad. Fill Missing Roles.</h1>
+                <p class="hero-subtext">Find peer developers, UI/UX designers, and pitch storytellers with algorithmic skill matching tailored for collegiate hackathons.</p>
+            </div>
+
+            <!-- Hackathon Countdowns -->
+            <div class="hackathon-tickers">
+                <div class="ticker-card">
+                    <div class="ticker-header">
+                        <span class="event-name">HackMIT 2026</span>
+                        <span class="badge badge-purple">In 23 Days</span>
+                    </div>
+                    <div class="ticker-stats">
+                        <span class="stat-highlight">$50,000</span>
+                        <span class="stat-lbl">Prize Pool • Cambridge, MA</span>
+                    </div>
+                </div>
+                <div class="ticker-card">
+                    <div class="ticker-header">
+                        <span class="event-name">Stanford TreeHacks</span>
+                        <span class="badge badge-cyan">In 33 Days</span>
+                    </div>
+                    <div class="ticker-stats">
+                        <span class="stat-highlight">1,200+</span>
+                        <span class="stat-lbl">Hackers • Stanford, CA</span>
+                    </div>
+                </div>
+                <div class="ticker-card">
+                    <div class="ticker-header">
+                        <span class="event-name">ETHGlobal SF</span>
+                        <span class="badge badge-emerald">In 39 Days</span>
+                    </div>
+                    <div class="ticker-stats">
+                        <span class="stat-highlight">$125,000</span>
+                        <span class="stat-lbl">Bounties • San Francisco</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dynamic Content Views -->
+        <main class="main-content">
+            <!-- VIEW 1: PROJECTS & SQUADS -->
+            <section class="view-panel active" id="view-projects">
+                <!-- Filter & Search Toolbar -->
+                <div class="toolbar">
+                    <div class="search-group">
+                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" id="project-search-input" class="search-input" placeholder="Search projects by name, required skills, or tech stack...">
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">Hackathon:</label>
+                        <select id="project-hackathon-filter" class="filter-select">
+                            <option value="all">All Hackathons</option>
+                            <option value="HackMIT 2026">HackMIT 2026</option>
+                            <option value="Stanford TreeHacks 2026">Stanford TreeHacks</option>
+                            <option value="ETHGlobal San Francisco">ETHGlobal SF</option>
+                        </select>
+
+                        <label class="filter-label">Needs Role:</label>
+                        <select id="project-role-filter" class="filter-select">
+                            <option value="all">Any Missing Role</option>
+                            <option value="Frontend Developer">Frontend Developer</option>
+                            <option value="UI/UX Designer">UI/UX Designer</option>
+                            <option value="Pitch / Presenter">Pitch / Presenter</option>
+                            <option value="Backend Developer">Backend Developer</option>
+                            <option value="AI / ML Developer">AI / ML Developer</option>
+                            <option value="Mobile App Developer">Mobile App Developer</option>
+                            <option value="Cloud / DevOps">Cloud / DevOps</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Projects Grid -->
+                <div class="cards-grid" id="projects-container">
+                    <!-- Injected by JavaScript -->
+                </div>
+            </section>
+
+            <!-- VIEW 2: TALENT NETWORK / STUDENTS -->
+            <section class="view-panel" id="view-students">
+                <div class="toolbar">
+                    <div class="search-group">
+                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" id="student-search-input" class="search-input" placeholder="Search talent by student name, skills, major, university...">
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">Primary Role:</label>
+                        <select id="student-role-filter" class="filter-select">
+                            <option value="all">All Disciplines</option>
+                            <option value="AI / ML Developer">AI / ML Developer</option>
+                            <option value="Frontend Developer">Frontend Developer</option>
+                            <option value="Backend Developer">Backend Developer</option>
+                            <option value="UI/UX Designer">UI/UX Designer</option>
+                            <option value="Pitch / Presenter">Pitch / Presenter</option>
+                            <option value="Mobile App Developer">Mobile App Developer</option>
+                            <option value="Cloud / DevOps">Cloud / DevOps</option>
+                        </select>
+
+                        <label class="filter-label">Experience:</label>
+                        <select id="student-exp-filter" class="filter-select">
+                            <option value="all">Any Experience</option>
+                            <option value="Advanced">Advanced</option>
+                            <option value="Intermediate">Intermediate</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Students Grid -->
+                <div class="cards-grid" id="students-container">
+                    <!-- Injected by JavaScript -->
+                </div>
+            </section>
+
+            <!-- VIEW 3: AI SQUAD MATCHMAKER -->
+            <section class="view-panel" id="view-matchmaker">
+                <div class="matchmaker-container">
+                    <div class="matchmaker-header">
+                        <div class="ai-badge-large">
+                            <span>✨ HackerThorne AI Engine</span>
+                        </div>
+                        <h2>Autonomous Squad Assembler</h2>
+                        <p>Select an active hackathon project to run multi-variable compatibility calculations across all available student talents, role coverage, and skill synergies.</p>
+                    </div>
+
+                    <div class="matchmaker-controls">
+                        <div class="control-box">
+                            <label for="matchmaker-project-select">Target Hackathon Project:</label>
+                            <select id="matchmaker-project-select" class="matchmaker-select">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        <button class="btn btn-ai-pulse" id="btn-run-matchmaker">
+                            <span>⚡ Re-Analyze & Auto-Assemble Roster</span>
+                        </button>
+                    </div>
+
+                    <!-- AI Results Section -->
+                    <div class="matchmaker-results" id="matchmaker-results">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 4: APPLICATIONS & REQUESTS -->
+            <section class="view-panel" id="view-applications">
+                <div class="inbox-header">
+                    <h2>Squad Applications & Team Invitations</h2>
+                    <p>Review incoming requests from students wanting to join your projects and keep track of invitations you've sent.</p>
+                </div>
+
+                <div class="inbox-subtabs">
+                    <button class="subtab-btn active" data-subtab="incoming" id="subtab-incoming">
+                        <span>Incoming Applications</span>
+                        <span class="subtab-badge" id="incoming-count">2</span>
+                    </button>
+                    <button class="subtab-btn" data-subtab="outgoing" id="subtab-outgoing">
+                        <span>Sent Invitations</span>
+                        <span class="subtab-badge" id="outgoing-count">1</span>
+                    </button>
+                </div>
+
+                <div class="requests-list" id="requests-container">
+                    <!-- Injected dynamically -->
+                </div>
+            </section>
+
+            <!-- VIEW 5: TEAM CHAT & DMS -->
+            <section class="view-panel" id="view-chat">
+                <div class="chat-layout">
+                    <!-- Chat Sidebar -->
+                    <aside class="chat-sidebar">
+                        <div class="chat-sidebar-header">
+                            <h3>Conversations</h3>
+                        </div>
+
+                        <div class="chat-channel-group">
+                            <div class="group-title">PROJECT SQUADS</div>
+                            <div class="chat-channels-list" id="project-chats-list">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+
+                        <div class="chat-channel-group">
+                            <div class="group-title">DIRECT MESSAGES</div>
+                            <div class="chat-channels-list" id="dm-chats-list">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- Chat Active Area -->
+                    <div class="chat-main" id="chat-window">
+                        <div class="chat-active-header" id="chat-header">
+                            <!-- Injected by JS -->
+                        </div>
+
+                        <div class="chat-messages-scroll" id="chat-messages">
+                            <!-- Injected by JS -->
+                        </div>
+
+                        <form class="chat-input-bar" id="chat-form">
+                            <input type="text" id="chat-input" class="chat-input" placeholder="Type a message or share an update..." autocomplete="off">
+                            <button type="submit" class="btn btn-primary" id="btn-send-chat">
+                                <span>Send</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- MODAL: PROJECT DETAIL & SQUAD HUB -->
+        <div class="modal-backdrop" id="project-detail-modal" style="display: none;">
+            <div class="modal-card modal-lg">
+                <div class="modal-header">
+                    <div class="modal-header-info">
+                        <span class="badge badge-purple" id="modal-project-hackathon">HackMIT 2026</span>
+                        <h2 id="modal-project-title">Smart Campus Assistant</h2>
+                    </div>
+                    <button class="modal-close-btn" id="btn-close-project-modal">&times;</button>
+                </div>
+
+                <div class="modal-body" id="modal-project-body">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: CREATE PROJECT -->
+        <div class="modal-backdrop" id="create-project-modal" style="display: none;">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h2>Launch New Hackathon Project</h2>
+                    <button class="modal-close-btn" id="btn-close-create-modal">&times;</button>
+                </div>
+                <form class="modal-body form-grid" id="create-project-form">
+                    <div class="form-group full-width">
+                        <label for="new-project-title">Project Title *</label>
+                        <input type="text" id="new-project-title" required placeholder="e.g. NeuroSync - BCI Focus Tracker">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="new-project-tagline">One-Sentence Elevator Pitch *</label>
+                        <input type="text" id="new-project-tagline" required placeholder="e.g. Real-time EEG brainwave feedback system for neurodivergent students">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new-project-hackathon">Hackathon *</label>
+                        <select id="new-project-hackathon" required>
+                            <option value="HackMIT 2026">HackMIT 2026</option>
+                            <option value="Stanford TreeHacks 2026">Stanford TreeHacks 2026</option>
+                            <option value="ETHGlobal San Francisco">ETHGlobal San Francisco</option>
+                            <option value="CalHacks 11.0">CalHacks 11.0</option>
+                            <option value="PennApps XXV">PennApps XXV</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new-project-track">Track / Category *</label>
+                        <input type="text" id="new-project-track" required placeholder="e.g. HealthTech, AI / ML, Web3">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new-project-commitment">Time Commitment</label>
+                        <input type="text" id="new-project-commitment" value="20 hrs/week" placeholder="e.g. 20 hrs/week">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new-project-deadline">Event Date / Deadline</label>
+                        <input type="text" id="new-project-deadline" value="Oct 20, 2026" placeholder="e.g. Oct 20, 2026">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="new-project-description">Detailed Project Description & Goals *</label>
+                        <textarea id="new-project-description" rows="3" required placeholder="Explain your concept, current stage, and the solution you want to present on demo day..."></textarea>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Roles Needed in Squad (Select all that apply):</label>
+                        <div class="checkbox-role-grid" id="new-project-roles">
+                            <label class="role-chip-choice"><input type="checkbox" name="role" value="Frontend Developer" checked> Frontend Developer</label>
+                            <label class="role-chip-choice"><input type="checkbox" name="role" value="UI/UX Designer" checked> UI/UX Designer</label>
+                            <label class="role-chip-choice"><input type="checkbox" name="role" value="Pitch / Presenter" checked> Pitch / Presenter</label>
+                            <label class="role-chip-choice"><input type="checkbox" name="role" value="Backend Developer"> Backend Developer</label>
+                            <label class="role-chip-choice"><input type="checkbox" name="role" value="AI / ML Developer"> AI / ML Developer</label>
+                            <label class="role-chip-choice"><input type="checkbox" name="role" value="Mobile App Developer"> Mobile App Developer</label>
+                            <label class="role-chip-choice"><input type="checkbox" name="role" value="Cloud / DevOps"> Cloud / DevOps</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="new-project-skills">Key Tech Stack / Skills (comma separated)</label>
+                        <input type="text" id="new-project-skills" placeholder="React, Python, FastAPI, Figma, TailwindCSS">
+                    </div>
+
+                    <div class="modal-footer full-width">
+                        <button type="button" class="btn btn-secondary" id="btn-cancel-create">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Publish Project & Open Recruitment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL: APPLICATION / INVITATION SUBMIT -->
+        <div class="modal-backdrop" id="apply-modal" style="display: none;">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h2 id="apply-modal-title">Apply to Squad</h2>
+                    <button class="modal-close-btn" id="btn-close-apply-modal">&times;</button>
+                </div>
+                <form class="modal-body" id="apply-form">
+                    <p class="modal-subtitle" id="apply-modal-desc">Send your application note to the project lead.</p>
+                    
+                    <div class="form-group">
+                        <label for="apply-role-select">Select Role you are Applying / Inviting for:</label>
+                        <select id="apply-role-select" class="filter-select" required>
+                            <!-- Injected -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="apply-note">Personal Note / Pitch:</label>
+                        <textarea id="apply-note" rows="4" required placeholder="Describe your experience, relevant past hackathons, and what you can build for this squad..."></textarea>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="btn-cancel-apply">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="btn-submit-apply">Submit Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Toast Notifications Container -->
+        <div class="toast-container" id="toast-container"></div>
+    </div>
+
+    <!-- Application Script -->
+    <script type="module" src="./app.js"></script>
+</body>
+</html>
