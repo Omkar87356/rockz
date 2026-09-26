@@ -1,0 +1,2518 @@
+// Pre-compiled Instant-Execution Habitly Pro OS (React 18)
+(function() {
+  const { createElement: h, useState, useEffect, useContext, createContext, useRef } = React;
+
+  // Sound Engine
+  class SoundEngine {
+    constructor() { this.ctx = null; this.enabled = true; }
+    setEnabled(val) { this.enabled = val; }
+    initCtx() {
+      if (!this.ctx) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) this.ctx = new AudioCtx();
+      }
+      if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+    }
+    playClick() {
+      if (!this.enabled) return;
+      try {
+        this.initCtx();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(400, this.ctx.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.04);
+      } catch (e) {}
+    }
+    playComplete() {
+      if (!this.enabled) return;
+      try {
+        this.initCtx();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+          gain.gain.setValueAtTime(0.12, now + idx * 0.06);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.25);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + idx * 0.06);
+          osc.stop(now + idx * 0.06 + 0.25);
+        });
+      } catch (e) {}
+    }
+    playLevelUp() {
+      if (!this.enabled) return;
+      try {
+        this.initCtx();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const chords = [{ f: 523.25, d: 0.1 }, { f: 659.25, d: 0.1 }, { f: 783.99, d: 0.1 }, { f: 1046.50, d: 0.15 }, { f: 1318.51, d: 0.4 }];
+        let offset = 0;
+        chords.forEach(c => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(c.f, now + offset);
+          gain.gain.setValueAtTime(0.18, now + offset);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + offset + c.d);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + offset);
+          osc.stop(now + offset + c.d);
+          offset += 0.08;
+        });
+      } catch (e) {}
+    }
+    playTimerBell() {
+      if (!this.enabled) return;
+      try {
+        this.initCtx();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, now);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 1.2);
+      } catch (e) {}
+    }
+  }
+  const sounds = new SoundEngine();
+
+  // Confetti Engine
+  function fireConfetti(originX = window.innerWidth / 2, originY = window.innerHeight / 2) {
+    let canvas = document.getElementById('habitly-confetti-canvas');
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.id = 'habitly-confetti-canvas';
+      canvas.style.position = 'fixed';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+      canvas.style.width = '100vw';
+      canvas.style.height = '100vh';
+      canvas.style.pointerEvents = 'none';
+      canvas.style.zIndex = '99999';
+      document.body.appendChild(canvas);
+    }
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const colors = ['#D4FF00', '#00F59B', '#6366F1', '#06B6D4', '#EC4899', '#F59E0B', '#FFFFFF'];
+    const particles = [];
+    const count = 90;
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5);
+      const speed = Math.random() * 12 + 6;
+      particles.push({
+        x: originX,
+        y: originY,
+        size: Math.random() * 8 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 4,
+        rot: Math.random() * 360,
+        rotSpeed: (Math.random() - 0.5) * 12,
+        opacity: 1
+      });
+    }
+    let frameId;
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let alive = false;
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.35;
+        p.vx *= 0.96;
+        p.rot += p.rotSpeed;
+        p.opacity -= 0.014;
+        if (p.opacity > 0) {
+          alive = true;
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, p.opacity);
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rot * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.7);
+          ctx.restore();
+        }
+      });
+      if (alive) frameId = requestAnimationFrame(render);
+      else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        cancelAnimationFrame(frameId);
+      }
+    };
+    render();
+  }
+
+  // Initial Data
+  const LEVEL_TIERS = [
+    { level: 1, title: 'Novice Seeker', minXP: 0, maxXP: 100 },
+    { level: 2, title: 'Habit Initiate', minXP: 100, maxXP: 300 },
+    { level: 3, title: 'Disciplined Mind', minXP: 300, maxXP: 600 },
+    { level: 4, title: 'Focus Practitioner', minXP: 600, maxXP: 1000 },
+    { level: 5, title: 'Flow Architect', minXP: 1000, maxXP: 1500 },
+    { level: 6, title: 'Zen Catalyst', minXP: 1500, maxXP: 2200 },
+    { level: 7, title: 'Master of Routine', minXP: 2200, maxXP: 3000 },
+  ];
+
+  const INITIAL_USER = {
+    level: 3,
+    levelTitle: 'Disciplined Mind',
+    currentXP: 450,
+    nextLevelXP: 600,
+    sparkPoints: 620,
+    totalHabitsCompleted: 48,
+    currentStreak: 12,
+    bestStreak: 19,
+    streakShields: 2,
+    soundEnabled: true,
+    notificationsEnabled: true,
+  };
+
+  const INITIAL_HABITS = [
+    {
+      id: 'h-1',
+      name: 'Morning Meditation & Breathwork',
+      category: 'mindfulness',
+      frequencyType: 'daily',
+      frequencyCount: 1,
+      todayCount: 1,
+      streak: 12,
+      bestStreak: 15,
+      targetDays: 30,
+      completedDays: 22,
+      completedToday: true,
+      status: 'active',
+      icon: '🧘',
+      color: '#00F59B',
+      history: {},
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 'h-2',
+      name: 'Deep Work Session (90 Mins)',
+      category: 'productivity',
+      frequencyType: 'times_per_day',
+      frequencyCount: 2,
+      todayCount: 2,
+      streak: 8,
+      bestStreak: 14,
+      targetDays: 20,
+      completedDays: 16,
+      completedToday: true,
+      status: 'active',
+      icon: '⚡',
+      color: '#6366F1',
+      history: {},
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 'h-3',
+      name: 'Hydration Target (Glasses of Water)',
+      category: 'health',
+      frequencyType: 'times_per_day',
+      frequencyCount: 8,
+      todayCount: 5,
+      streak: 19,
+      bestStreak: 19,
+      targetDays: 30,
+      completedDays: 26,
+      completedToday: false,
+      status: 'active',
+      icon: '💧',
+      color: '#06B6D4',
+      history: {},
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 'h-4',
+      name: 'Strength Training / Calisthenics',
+      category: 'fitness',
+      frequencyType: 'days_per_week',
+      frequencyCount: 5,
+      todayCount: 0,
+      streak: 5,
+      bestStreak: 10,
+      targetDays: 24,
+      completedDays: 14,
+      completedToday: false,
+      status: 'active',
+      icon: '🏋️',
+      color: '#D4FF00',
+      history: {},
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 'h-5',
+      name: 'Read 20 Pages Non-Fiction',
+      category: 'learning',
+      frequencyType: 'daily',
+      frequencyCount: 1,
+      todayCount: 0,
+      streak: 7,
+      bestStreak: 12,
+      targetDays: 30,
+      completedDays: 18,
+      completedToday: false,
+      status: 'active',
+      icon: '📚',
+      color: '#F59E0B',
+      history: {},
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 'h-6',
+      name: 'Guitar Practice & Creative Flow',
+      category: 'creativity',
+      frequencyType: 'interval',
+      frequencyCount: 2,
+      todayCount: 0,
+      streak: 3,
+      bestStreak: 8,
+      targetDays: 15,
+      completedDays: 8,
+      completedToday: false,
+      status: 'paused',
+      pauseReason: 'Injury / Rehab',
+      icon: '🎸',
+      color: '#EC4899',
+      history: {},
+      createdAt: new Date().toISOString(),
+    },
+  ];
+
+  const INITIAL_SCHEDULE = [
+    {
+      id: 'sb-1',
+      title: 'Morning Sunlight & Mindful Breath',
+      startTime: '06:30',
+      endTime: '07:15',
+      days: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'],
+      category: 'Mindfulness',
+      color: '#00F59B',
+      icon: '🧘',
+      linkedHabitId: 'h-1',
+      completedToday: true,
+    },
+    {
+      id: 'sb-2',
+      title: 'High-Leverage Deep Coding Block',
+      startTime: '09:00',
+      endTime: '12:00',
+      days: ['mon', 'tue', 'wed', 'thu', 'fri'],
+      category: 'Productivity',
+      color: '#6366F1',
+      icon: '⚡',
+      linkedHabitId: 'h-2',
+      completedToday: true,
+    },
+    {
+      id: 'sb-3',
+      title: 'Hydration Target & Bio Recharge',
+      startTime: '13:00',
+      endTime: '13:30',
+      days: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'],
+      category: 'Health',
+      color: '#06B6D4',
+      icon: '💧',
+      linkedHabitId: 'h-3',
+      completedToday: false,
+    },
+    {
+      id: 'sb-4',
+      title: 'Hypertrophy Strength Workout',
+      startTime: '17:30',
+      endTime: '18:45',
+      days: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'],
+      category: 'Fitness',
+      color: '#D4FF00',
+      icon: '🏋️',
+      linkedHabitId: 'h-4',
+      completedToday: false,
+    },
+    {
+      id: 'sb-5',
+      title: 'Evening Philosophy & Deep Reading',
+      startTime: '21:30',
+      endTime: '22:15',
+      days: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'],
+      category: 'Learning',
+      color: '#F59E0B',
+      icon: '📚',
+      linkedHabitId: 'h-5',
+      completedToday: false,
+    },
+  ];
+
+  const INITIAL_REMINDERS = [
+    {
+      id: 'rem-1',
+      title: 'Morning Routine Kickoff',
+      triggerTime: '06:25',
+      days: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'],
+      type: 'schedule',
+      message: 'Time to rise! Sunlight & meditation protocol starts in 5 minutes.',
+      isActive: true,
+    },
+    {
+      id: 'rem-2',
+      title: 'Deep Work Flow State Alert',
+      triggerTime: '08:55',
+      days: ['mon', 'tue', 'wed', 'thu', 'fri'],
+      type: 'habit',
+      message: 'Eliminate all tab clutter. 90-minute Deep Work session starting.',
+      isActive: true,
+    },
+    {
+      id: 'rem-3',
+      title: 'Hydration & Posture Check',
+      triggerTime: '14:00',
+      days: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'],
+      type: 'hydration',
+      message: 'Drink 500ml water and stand up for spinal realignment.',
+      isActive: true,
+    },
+    {
+      id: 'rem-4',
+      title: 'Nightly Streak Shield Warning',
+      triggerTime: '21:00',
+      days: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'],
+      type: 'streak_shield',
+      message: '3 hours before midnight! Log remaining habits or activate Skip.',
+      isActive: true,
+    },
+  ];
+
+  const INITIAL_NOTIFICATIONS = [
+    {
+      id: 'notif-1',
+      title: '🔥 Streak Momentum Level Up',
+      message: 'You have maintained your streak for 12 consecutive days!',
+      timestamp: '10m ago',
+      type: 'streak',
+      isRead: false,
+    },
+    {
+      id: 'notif-2',
+      title: '⏰ Scheduled: Hypertrophy Workout',
+      message: 'Gym session begins at 17:30 today. Prep your hydration.',
+      timestamp: '1h ago',
+      type: 'schedule',
+      isRead: false,
+    },
+    {
+      id: 'notif-3',
+      title: '⚡ 620 Spark Points Accumulated',
+      message: 'New rewards unlocked in the Vault. Check them out!',
+      timestamp: '3h ago',
+      type: 'achievement',
+      isRead: true,
+    },
+  ];
+
+  const INITIAL_TASKS = [
+    {
+      id: 't-1',
+      title: 'Review System Architecture PR on Github',
+      priority: 'urgent',
+      completed: true,
+      dueDate: 'Today',
+      dueTime: '11:00 AM',
+      category: 'Engineering',
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 't-2',
+      title: 'Prepare quarterly OKR slide deck for stakeholders',
+      priority: 'high',
+      completed: false,
+      dueDate: 'Today',
+      dueTime: '03:30 PM',
+      category: 'Strategy',
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 't-3',
+      title: 'Submit monthly expense reconciliation',
+      priority: 'medium',
+      completed: false,
+      dueDate: 'Tomorrow',
+      dueTime: '05:00 PM',
+      category: 'Finance',
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 't-4',
+      title: 'Organize workspace cable management & desk layout',
+      priority: 'low',
+      completed: false,
+      dueDate: 'This Weekend',
+      category: 'Life',
+      createdAt: new Date().toISOString(),
+    },
+  ];
+
+  const INITIAL_REWARDS = [
+    {
+      id: 'r-1',
+      title: '1 Hour Guilt-Free Gaming / Netflix',
+      cost: 100,
+      icon: '🎮',
+      category: 'Entertainment',
+      description: 'Enjoy high immersion relaxation without cognitive guilt.',
+      claimedCount: 4,
+      unlockedLevel: 1,
+    },
+    {
+      id: 'r-2',
+      title: 'Artisanal Specialty Coffee & Pastry',
+      cost: 150,
+      icon: '☕',
+      category: 'Food & Drink',
+      description: 'Visit your favorite premium cafe and savor a handcrafted roast.',
+      claimedCount: 2,
+      unlockedLevel: 1,
+    },
+    {
+      id: 'r-3',
+      title: 'Buy a Brand New Hardcover Book',
+      cost: 300,
+      icon: '📖',
+      category: 'Learning',
+      description: 'Order any book from your wishlist immediately.',
+      claimedCount: 1,
+      unlockedLevel: 2,
+    },
+    {
+      id: 'r-4',
+      title: 'Weekend Spa, Sauna & Cold Plunge',
+      cost: 600,
+      icon: '🧖',
+      category: 'Wellness',
+      description: 'Full body nervous system reset at the local wellness spa.',
+      claimedCount: 0,
+      unlockedLevel: 3,
+    },
+    {
+      id: 'r-5',
+      title: 'Pro Mechanical Keyboard / Tech Gear',
+      cost: 1200,
+      icon: '⌨️',
+      category: 'Gear',
+      description: 'High-ticket reward for crushing 30+ consistent days.',
+      claimedCount: 0,
+      unlockedLevel: 4,
+    },
+  ];
+
+  const STOIC_QUOTES = [
+    { text: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", author: "Will Durant" },
+    { text: "Small disciplines repeated with consistency every day lead to great achievements gained slowly over time.", author: "John C. Maxwell" },
+    { text: "You do not rise to the level of your goals. You fall to the level of your systems.", author: "James Clear" },
+    { text: "First say to yourself what you would be; and then do what you have to do.", author: "Epictetus" },
+    { text: "Waste no more time arguing what a good man should be. Be one.", author: "Marcus Aurelius" },
+  ];
+
+  const loadStorage = (k, fb) => {
+    try {
+      const v = localStorage.getItem(k);
+      if (v) return JSON.parse(v);
+    } catch (e) {}
+    return fb;
+  };
+
+  const saveStorage = (k, v) => {
+    try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {}
+  };
+
+  // Context Setup
+  const HabitlyContext = createContext(null);
+
+  function HabitlyProvider({ children }) {
+    const [habits, setHabits] = useState(() => loadStorage('habitly_react_habits', INITIAL_HABITS));
+    const [tasks, setTasks] = useState(() => loadStorage('habitly_react_tasks', INITIAL_TASKS));
+    const [rewards, setRewards] = useState(() => loadStorage('habitly_react_rewards', INITIAL_REWARDS));
+    const [user, setUser] = useState(() => loadStorage('habitly_react_user', INITIAL_USER));
+    const [schedule, setSchedule] = useState(() => loadStorage('habitly_react_schedule', INITIAL_SCHEDULE));
+    const [reminders, setReminders] = useState(() => loadStorage('habitly_react_reminders', INITIAL_REMINDERS));
+    const [notifications, setNotifications] = useState(() => loadStorage('habitly_react_notifs', INITIAL_NOTIFICATIONS));
+
+    const [activeSection, setActiveSection] = useState('command-center');
+    const [toasts, setToasts] = useState([]);
+
+    const [isAddHabitOpen, setIsAddHabitOpen] = useState(false);
+    const [isAddScheduleOpen, setIsAddScheduleOpen] = useState(false);
+    const [isAddReminderOpen, setIsAddReminderOpen] = useState(false);
+    const [isAddRewardOpen, setIsAddRewardOpen] = useState(false);
+    const [isWidgetGuideOpen, setIsWidgetGuideOpen] = useState(false);
+    const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = useState(false);
+    const [isLevelUpOpen, setIsLevelUpOpen] = useState(false);
+    const [levelUpInfo, setLevelUpInfo] = useState(null);
+    const [skipModal, setSkipModal] = useState({ isOpen: false, habitId: null, habitName: '' });
+    const [pauseModal, setPauseModal] = useState({ isOpen: false, habitId: null, habitName: '' });
+
+    useEffect(() => { saveStorage('habitly_react_habits', habits); }, [habits]);
+    useEffect(() => { saveStorage('habitly_react_tasks', tasks); }, [tasks]);
+    useEffect(() => { saveStorage('habitly_react_rewards', rewards); }, [rewards]);
+    useEffect(() => { saveStorage('habitly_react_schedule', schedule); }, [schedule]);
+    useEffect(() => { saveStorage('habitly_react_reminders', reminders); }, [reminders]);
+    useEffect(() => { saveStorage('habitly_react_notifs', notifications); }, [notifications]);
+    useEffect(() => {
+      saveStorage('habitly_react_user', user);
+      sounds.setEnabled(user.soundEnabled);
+    }, [user]);
+
+    const addToast = (title, message, type = 'info') => {
+      const id = 't-' + Date.now() + '-' + Math.random();
+      setToasts(prev => [...prev, { id, title, message, type }]);
+      setTimeout(() => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+      }, 4000);
+    };
+
+    const removeToast = id => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    };
+
+    const toggleSound = () => {
+      setUser(prev => {
+        const next = !prev.soundEnabled;
+        sounds.setEnabled(next);
+        return { ...prev, soundEnabled: next };
+      });
+      sounds.playClick();
+    };
+
+    const testNotification = (title, message) => {
+      sounds.playTimerBell();
+      addToast(title, message, 'info');
+      const newNotif = {
+        id: 'notif-' + Date.now(),
+        title,
+        message,
+        timestamp: 'Just now',
+        type: 'reminder',
+        isRead: false
+      };
+      setNotifications(prev => [newNotif, ...prev]);
+
+      if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+          new Notification(title, {
+            body: message,
+            icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>'
+          });
+        } catch (e) {}
+      }
+    };
+
+    const requestNotificationPermission = async () => {
+      if (!('Notification' in window)) {
+        addToast('Notifications Unsupported', 'Your browser does not support web alerts.', 'warning');
+        return false;
+      }
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          setUser(prev => ({ ...prev, notificationsEnabled: true }));
+          addToast('Notifications Enabled! 🔔', 'Habitly smart reminders are now active.', 'success');
+          testNotification('Habitly Notifications Active ⚡', 'Intelligent reminders are now active.');
+          return true;
+        } else {
+          setUser(prev => ({ ...prev, notificationsEnabled: false }));
+          addToast('Permission Denied', 'Enable alerts in browser settings.', 'warning');
+          return false;
+        }
+      } catch (e) {
+        return false;
+      }
+    };
+
+    const markNotificationRead = id => {
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    };
+
+    const clearAllNotifications = () => {
+      setNotifications([]);
+      sounds.playClick();
+    };
+
+    const addXP = (amount, pointsAmount) => {
+      setUser(prev => {
+        let newXP = prev.currentXP + amount;
+        let newLevel = prev.level;
+        let newPoints = prev.sparkPoints + pointsAmount;
+        let newLevelTitle = prev.levelTitle;
+        let leveledUp = false;
+        const oldLevel = prev.level;
+
+        const currentTier = LEVEL_TIERS.find(t => t.level === newLevel);
+        if (currentTier && newXP >= currentTier.maxXP) {
+          const nextTier = LEVEL_TIERS.find(t => t.level === newLevel + 1);
+          if (nextTier) {
+            newLevel = nextTier.level;
+            newLevelTitle = nextTier.title;
+            leveledUp = true;
+          }
+        }
+
+        if (leveledUp) {
+          sounds.playLevelUp();
+          fireConfetti();
+          const unlocked = rewards.filter(r => r.unlockedLevel === newLevel).map(r => r.title);
+          setLevelUpInfo({ oldLevel, newLevel, newTitle: newLevelTitle, unlockedRewards: unlocked });
+          setIsLevelUpOpen(true);
+          addToast(`Level Up! ${newLevelTitle}`, `Reached Level ${newLevel}! +50 Bonus Spark Points!`, 'achievement');
+          newPoints += 50;
+        }
+
+        const tierCalc = LEVEL_TIERS.find(t => t.level === newLevel) || LEVEL_TIERS[LEVEL_TIERS.length - 1];
+        return {
+          ...prev,
+          level: newLevel,
+          levelTitle: newLevelTitle,
+          currentXP: newXP,
+          nextLevelXP: tierCalc.maxXP,
+          sparkPoints: newPoints,
+        };
+      });
+    };
+
+    const toggleHabit = id => {
+      const todayStr = new Date().toISOString().split('T')[0];
+      let justCompleted = false;
+
+      setHabits(prev => prev.map(h => {
+        if (h.id !== id || h.status === 'paused') return h;
+        const willBeComplete = !h.completedToday;
+        justCompleted = willBeComplete;
+        const newStreak = willBeComplete ? h.streak + 1 : Math.max(0, h.streak - 1);
+        const newCompletedDays = willBeComplete ? h.completedDays + 1 : Math.max(0, h.completedDays - 1);
+        const newTodayCount = willBeComplete ? h.frequencyCount : 0;
+        return {
+          ...h,
+          completedToday: willBeComplete,
+          todayCount: newTodayCount,
+          status: 'active',
+          streak: newStreak,
+          bestStreak: Math.max(h.bestStreak, newStreak),
+          completedDays: newCompletedDays,
+          history: { ...h.history, [todayStr]: willBeComplete ? 'completed' : 'missed' }
+        };
+      }));
+
+      // Sync schedule blocks
+      setSchedule(prev => prev.map(b => b.linkedHabitId === id ? { ...b, completedToday: justCompleted } : b));
+
+      if (justCompleted) {
+        sounds.playComplete();
+        fireConfetti();
+        addXP(25, 20);
+        addToast('Habit Crushed! ⚡', '+25 XP & +20 Spark Points', 'success');
+        setUser(prev => ({ ...prev, totalHabitsCompleted: prev.totalHabitsCompleted + 1, currentStreak: Math.max(prev.currentStreak, 1) }));
+      } else {
+        sounds.playClick();
+        addXP(-25, -20);
+      }
+    };
+
+    const incrementHabitCount = id => {
+      const todayStr = new Date().toISOString().split('T')[0];
+      let reachedTarget = false;
+
+      setHabits(prev => prev.map(h => {
+        if (h.id !== id || h.status === 'paused') return h;
+        const nextCount = Math.min(h.frequencyCount, (h.todayCount || 0) + 1);
+        const willComplete = nextCount >= h.frequencyCount;
+        if (willComplete && !h.completedToday) reachedTarget = true;
+
+        const newStreak = willComplete && !h.completedToday ? h.streak + 1 : h.streak;
+        const newCompletedDays = willComplete && !h.completedToday ? h.completedDays + 1 : h.completedDays;
+
+        return {
+          ...h,
+          todayCount: nextCount,
+          completedToday: willComplete,
+          streak: newStreak,
+          bestStreak: Math.max(h.bestStreak, newStreak),
+          completedDays: newCompletedDays,
+          history: { ...h.history, [todayStr]: willComplete ? 'completed' : 'missed' }
+        };
+      }));
+
+      if (reachedTarget) {
+        sounds.playComplete();
+        fireConfetti();
+        addXP(30, 25);
+        addToast('Daily Frequency Met! 🏆', 'All intervals for this habit completed today!', 'achievement');
+      } else {
+        sounds.playClick();
+      }
+    };
+
+    const decrementHabitCount = id => {
+      setHabits(prev => prev.map(h => {
+        if (h.id !== id || h.status === 'paused') return h;
+        const nextCount = Math.max(0, (h.todayCount || 0) - 1);
+        const willComplete = nextCount >= h.frequencyCount;
+        return {
+          ...h,
+          todayCount: nextCount,
+          completedToday: willComplete
+        };
+      }));
+      sounds.playClick();
+    };
+
+    const addHabit = data => {
+      const newHabit = {
+        id: 'h-' + Date.now(),
+        name: data.name,
+        category: data.category,
+        frequencyType: data.frequencyType || 'daily',
+        frequencyCount: data.frequencyCount || 1,
+        todayCount: 0,
+        streak: 0,
+        bestStreak: 0,
+        targetDays: data.targetDays,
+        completedDays: 0,
+        completedToday: false,
+        status: 'active',
+        icon: data.icon || '🎯',
+        color: data.color || '#00F59B',
+        history: {},
+        createdAt: new Date().toISOString(),
+      };
+      setHabits(prev => [newHabit, ...prev]);
+      sounds.playComplete();
+      addToast('Habit Created', `"${data.name}" added to tracker!`, 'success');
+      setIsAddHabitOpen(false);
+    };
+
+    const deleteHabit = id => {
+      setHabits(prev => prev.filter(h => h.id !== id));
+      setSchedule(prev => prev.filter(b => b.linkedHabitId !== id));
+      sounds.playClick();
+      addToast('Habit Deleted', 'Habit removed from tracker.', 'info');
+    };
+
+    const openSkipModal = (id, name) => {
+      setSkipModal({ isOpen: true, habitId: id, habitName: name });
+      sounds.playClick();
+    };
+    const closeSkipModal = () => setSkipModal({ isOpen: false, habitId: null, habitName: '' });
+
+    const confirmSkipHabit = reason => {
+      if (!skipModal.habitId) return;
+      const todayStr = new Date().toISOString().split('T')[0];
+      setHabits(prev => prev.map(h => {
+        if (h.id !== skipModal.habitId) return h;
+        return { ...h, status: 'skipped', completedToday: false, skipReason: reason, history: { ...h.history, [todayStr]: 'skipped' } };
+      }));
+      sounds.playClick();
+      addToast('Streak Protected 🛡️', `Skipped "${skipModal.habitName}" (${reason}). Streak preserved!`, 'info');
+      closeSkipModal();
+    };
+
+    const openPauseModal = (id, name) => {
+      setPauseModal({ isOpen: true, habitId: id, habitName: name });
+      sounds.playClick();
+    };
+    const closePauseModal = () => setPauseModal({ isOpen: false, habitId: null, habitName: '' });
+
+    const confirmPauseHabit = (reason, durationDays = 14) => {
+      if (!pauseModal.habitId) return;
+      const until = new Date(Date.now() + durationDays * 86400000).toISOString().split('T')[0];
+      setHabits(prev => prev.map(h => {
+        if (h.id !== pauseModal.habitId) return h;
+        return { ...h, status: 'paused', completedToday: false, pauseReason: reason, pausedUntil: until };
+      }));
+      sounds.playClick();
+      addToast('Habit Paused ⏸️', `"${pauseModal.habitName}" frozen for ${durationDays} days (${reason}).`, 'warning');
+      closePauseModal();
+    };
+
+    const resumeHabit = id => {
+      setHabits(prev => prev.map(h => {
+        if (h.id !== id) return h;
+        return { ...h, status: 'active', pauseReason: undefined, pausedUntil: undefined };
+      }));
+      sounds.playComplete();
+      addToast('Habit Resumed 🚀', 'Habit is back in active rotation!', 'success');
+    };
+
+    // Schedule actions
+    const addScheduleBlock = block => {
+      const newBlock = { ...block, id: 'sb-' + Date.now(), completedToday: false };
+      setSchedule(prev => [...prev, newBlock].sort((a, b) => a.startTime.localeCompare(b.startTime)));
+      sounds.playComplete();
+      addToast('Schedule Block Created', `"${block.title}" (${block.startTime} - ${block.endTime})`, 'success');
+      setIsAddScheduleOpen(false);
+    };
+
+    const deleteScheduleBlock = id => {
+      setSchedule(prev => prev.filter(b => b.id !== id));
+      sounds.playClick();
+      addToast('Schedule Block Deleted', 'Time block removed.', 'info');
+    };
+
+    const toggleScheduleBlockToday = id => {
+      let blockTitle = '';
+      let isDone = false;
+      let linkedHabit;
+
+      setSchedule(prev => prev.map(b => {
+        if (b.id !== id) return b;
+        const next = !b.completedToday;
+        blockTitle = b.title;
+        isDone = next;
+        linkedHabit = b.linkedHabitId;
+        return { ...b, completedToday: next };
+      }));
+
+      if (linkedHabit) {
+        toggleHabit(linkedHabit);
+      } else {
+        if (isDone) {
+          sounds.playComplete();
+          addXP(20, 15);
+          addToast('Schedule Block Completed! 🎯', `"${blockTitle}" crushed! +20 XP`, 'success');
+        } else {
+          sounds.playClick();
+          addXP(-20, -15);
+        }
+      }
+    };
+
+    // Reminder actions
+    const addReminder = rem => {
+      const newRem = { ...rem, id: 'rem-' + Date.now() };
+      setReminders(prev => [...prev, newRem]);
+      sounds.playComplete();
+      addToast('Smart Reminder Set', `Alert for ${rem.triggerTime} (${rem.title})`, 'success');
+      setIsAddReminderOpen(false);
+    };
+
+    const toggleReminder = id => {
+      setReminders(prev => prev.map(r => r.id === id ? { ...r, isActive: !r.isActive } : r));
+      sounds.playClick();
+    };
+
+    const deleteReminder = id => {
+      setReminders(prev => prev.filter(r => r.id !== id));
+      sounds.playClick();
+    };
+
+    const toggleTask = id => {
+      let completedNow = false;
+      setTasks(prev => prev.map(t => {
+        if (t.id !== id) return t;
+        const next = !t.completed;
+        completedNow = next;
+        return { ...t, completed: next };
+      }));
+      if (completedNow) {
+        sounds.playComplete();
+        addXP(15, 10);
+        addToast('Task Completed! ✔️', '+15 XP & +10 Spark Points', 'success');
+      } else {
+        sounds.playClick();
+        addXP(-15, -10);
+      }
+    };
+
+    const addTask = (title, priority, dueDate, dueTime, category) => {
+      const newTask = {
+        id: 't-' + Date.now(),
+        title,
+        priority,
+        completed: false,
+        dueDate,
+        dueTime,
+        category: category || 'General',
+        createdAt: new Date().toISOString(),
+      };
+      setTasks(prev => [newTask, ...prev]);
+      sounds.playClick();
+      addToast('Directive Added', `"${title}" added to checklist.`, 'info');
+    };
+
+    const deleteTask = id => {
+      setTasks(prev => prev.filter(t => t.id !== id));
+      sounds.playClick();
+    };
+
+    const claimReward = id => {
+      const targetReward = rewards.find(r => r.id === id);
+      if (!targetReward) return false;
+      if (user.sparkPoints < targetReward.cost) {
+        addToast('Insufficient Points', `Need ${targetReward.cost - user.sparkPoints} more ⚡ Spark Points.`, 'warning');
+        return false;
+      }
+      if (user.level < targetReward.unlockedLevel) {
+        addToast('Locked Reward', `Unlocks at Level ${targetReward.unlockedLevel}.`, 'warning');
+        return false;
+      }
+      setUser(prev => ({ ...prev, sparkPoints: prev.sparkPoints - targetReward.cost }));
+      setRewards(prev => prev.map(r => r.id === id ? { ...r, claimedCount: r.claimedCount + 1 } : r));
+      sounds.playComplete();
+      fireConfetti();
+      addToast('Reward Claimed! 🎁', `Enjoy: "${targetReward.title}"! Well deserved!`, 'achievement');
+      return true;
+    };
+
+    const addReward = data => {
+      const newReward = {
+        id: 'r-' + Date.now(),
+        title: data.title,
+        cost: data.cost,
+        icon: data.icon || '🎁',
+        category: data.category || 'Custom',
+        description: data.description,
+        claimedCount: 0,
+        unlockedLevel: 1,
+      };
+      setRewards(prev => [...prev, newReward]);
+      sounds.playComplete();
+      addToast('Reward Added', `"${data.title}" added to Vault.`, 'success');
+      setIsAddRewardOpen(false);
+    };
+
+    const unreadNotificationCount = notifications.filter(n => !n.isRead).length;
+    const activeHabits = habits.filter(h => h.status !== 'paused');
+    const completedHabits = activeHabits.filter(h => h.completedToday).length;
+    const todayCompletionRate = activeHabits.length > 0 ? Math.round((completedHabits / activeHabits.length) * 100) : 0;
+
+    return h(HabitlyContext.Provider, {
+      value: {
+        habits, tasks, rewards, user, schedule, reminders, notifications, unreadNotificationCount,
+        activeSection, setActiveSection,
+        toggleHabit, incrementHabitCount, decrementHabitCount, addHabit, deleteHabit, openSkipModal, closeSkipModal, confirmSkipHabit,
+        openPauseModal, closePauseModal, confirmPauseHabit, resumeHabit,
+        addScheduleBlock, deleteScheduleBlock, toggleScheduleBlockToday,
+        addReminder, toggleReminder, deleteReminder, testNotification, requestNotificationPermission,
+        markNotificationRead, clearAllNotifications,
+        toggleTask, addTask, deleteTask, claimReward, addReward,
+        skipModal, pauseModal, isAddHabitOpen, setIsAddHabitOpen,
+        isAddScheduleOpen, setIsAddScheduleOpen, isAddReminderOpen, setIsAddReminderOpen,
+        isAddRewardOpen, setIsAddRewardOpen, isWidgetGuideOpen, setIsWidgetGuideOpen,
+        isNotificationDrawerOpen, setIsNotificationDrawerOpen,
+        isLevelUpOpen, setIsLevelUpOpen, levelUpInfo, toasts, addToast, removeToast,
+        toggleSound, todayCompletionRate,
+      }
+    }, children);
+  }
+
+  const useHabitly = () => useContext(HabitlyContext);
+
+  // Components
+  function Navigation() {
+    const { activeSection, setActiveSection, user, todayCompletionRate } = useHabitly();
+    const navItems = [
+      { id: 'command-center', label: 'Command Center', icon: '⚡' },
+      { id: 'schedule', label: 'Schedule Architect', icon: '📅' },
+      { id: 'widgets', label: 'Widget Dock', icon: '🧩' },
+      { id: 'habits', label: 'Habit Hub', icon: '🎯' },
+      { id: 'todos', label: 'Daily Priorities', icon: '📋' },
+      { id: 'analytics', label: 'Analytics & Heatmap', icon: '📊' },
+      { id: 'rewards', label: 'Reward Vault', icon: '🏆', badge: '⚡' + user.sparkPoints },
+    ];
+
+    return h('aside', { className: 'app-sidebar' },
+      h('div', { className: 'sidebar-brand' },
+        h('div', { className: 'brand-logo-icon' }, 'H'),
+        h('div', { className: 'brand-info' },
+          h('h1', { className: 'brand-title' }, 'HABITLY'),
+          h('span', { className: 'brand-tag' }, 'PRO OS v3.0')
+        )
+      ),
+      h('div', { className: 'sidebar-user-glance' },
+        h('div', { className: 'user-avatar-hex' }, h('span', null, `Lv.${user.level}`)),
+        h('div', { className: 'user-glance-details' },
+          h('span', { className: 'user-tier-label' }, user.levelTitle),
+          h('div', { className: 'user-mini-xp-track' },
+            h('div', { className: 'user-mini-xp-fill', style: { width: `${Math.min(100, Math.round((user.currentXP / user.nextLevelXP) * 100))}%` } })
+          ),
+          h('span', { className: 'user-xp-numbers' }, `${user.currentXP} / ${user.nextLevelXP} XP`)
+        )
+      ),
+      h('nav', { className: 'sidebar-nav' },
+        h('div', { className: 'nav-group-label' }, 'OPERATING SYSTEM'),
+        navItems.map(item => {
+          const isActive = activeSection === item.id;
+          return h('button', {
+            key: item.id,
+            className: `nav-btn ${isActive ? 'active' : ''}`,
+            onClick: () => {
+              setActiveSection(item.id);
+              const el = document.getElementById(item.id);
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          },
+            h('span', { className: 'nav-icon' }, item.icon),
+            h('span', { className: 'nav-label' }, item.label),
+            item.badge && h('span', { className: 'nav-badge' }, item.badge),
+            isActive && h('div', { className: 'active-glow-indicator' })
+          );
+        })
+      ),
+      h('div', { className: 'sidebar-footer-widget' },
+        h('div', { className: 'widget-mini-header' },
+          h('span', { className: 'mini-label' }, "TODAY'S MOMENTUM"),
+          h('span', { className: 'mini-pct' }, `${todayCompletionRate}%`)
+        ),
+        h('div', { className: 'momentum-bar' },
+          h('div', { className: 'momentum-fill', style: { width: `${todayCompletionRate}%` } })
+        ),
+        h('div', { className: 'streak-shield-badge' },
+          h('span', null, `🛡️ ${user.streakShields} Streak Shields Active`)
+        )
+      )
+    );
+  }
+
+  function Topbar() {
+    const { user, setIsAddHabitOpen, toggleSound, setIsWidgetGuideOpen, unreadNotificationCount, setIsNotificationDrawerOpen } = useHabitly();
+    const xpPercent = Math.min(100, Math.round((user.currentXP / user.nextLevelXP) * 100));
+    const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+
+    return h('header', { className: 'app-topbar' },
+      h('div', { className: 'topbar-left' },
+        h('div', { className: 'system-status-indicator' },
+          h('span', { className: 'pulse-dot' }),
+          h('span', { className: 'status-text' }, 'SYSTEM ONLINE')
+        ),
+        h('span', { className: 'topbar-divider' }, '/'),
+        h('div', { className: 'current-date-badge' }, `📅 ${currentDate}`)
+      ),
+      h('div', { className: 'topbar-right' },
+        h('div', { className: 'gamification-pill xp-pill' },
+          h('div', { className: 'pill-badge level-badge' }, `Lv.${user.level}`),
+          h('div', { className: 'pill-content' },
+            h('div', { className: 'pill-title' }, user.levelTitle),
+            h('div', { className: 'pill-progress-track' },
+              h('div', { className: 'pill-progress-fill', style: { width: `${xpPercent}%` } })
+            )
+          ),
+          h('span', { className: 'pill-extra' }, `${xpPercent}%`)
+        ),
+        h('div', { className: 'gamification-pill spark-pill' },
+          h('span', { className: 'pill-icon' }, '⚡'),
+          h('div', { className: 'pill-numeric' }, user.sparkPoints.toLocaleString()),
+          h('span', { className: 'pill-unit' }, 'PTS')
+        ),
+        h('div', { className: 'gamification-pill streak-pill' },
+          h('span', { className: 'pill-icon flame-anim' }, '🔥'),
+          h('div', { className: 'pill-numeric' }, user.currentStreak),
+          h('span', { className: 'pill-unit' }, 'DAYS')
+        ),
+        h('div', { className: 'topbar-actions' },
+          h('button', {
+            className: 'action-icon-btn notif-bell-btn',
+            onClick: () => setIsNotificationDrawerOpen(true),
+            title: 'Smart Notifications & Reminders'
+          },
+            h('span', null, '🔔'),
+            unreadNotificationCount > 0 && h('span', { className: 'notif-badge-count' }, unreadNotificationCount)
+          ),
+          h('button', {
+            className: 'action-icon-btn widget-btn',
+            onClick: () => setIsWidgetGuideOpen(true),
+            title: 'Add Widget to Mobile / Desktop'
+          }, '📱 +Widget'),
+          h('button', {
+            className: 'action-icon-btn sound-btn',
+            onClick: toggleSound,
+            title: user.soundEnabled ? 'Mute' : 'Unmute'
+          }, user.soundEnabled ? '🔊' : '🔇'),
+          h('button', {
+            className: 'btn-primary-neon topbar-add-btn',
+            onClick: () => setIsAddHabitOpen(true)
+          }, '+ New Habit')
+        )
+      )
+    );
+  }
+
+  function CommandCenter() {
+    const { habits, tasks, user, todayCompletionRate, toggleHabit, openSkipModal, openPauseModal, setIsAddHabitOpen, setActiveSection, toggleTask } = useHabitly();
+    const radius = 64;
+    const circumference = 2 * Math.PI * radius;
+    const strokeDashoffset = circumference - (todayCompletionRate / 100) * circumference;
+    const activeHabits = habits.filter(h => h.status !== 'paused');
+    const pausedHabits = habits.filter(h => h.status === 'paused');
+    const completedCount = activeHabits.filter(h => h.completedToday).length;
+    const pendingTasks = tasks.filter(t => !t.completed).slice(0, 4);
+
+    return h('section', { id: 'command-center', className: 'dashboard-section section-command-center in-view' },
+      h('div', { className: 'section-header-row' },
+        h('div', null,
+          h('div', { className: 'section-eyebrow' }, 'MISSION CONTROL'),
+          h('h2', { className: 'section-main-title' }, 'Home Command Center'),
+          h('p', { className: 'section-subtitle' }, 'Real-time daily telemetry, instant habit check-ins, and high-priority directives.')
+        ),
+        h('div', { className: 'section-header-actions' },
+          h('button', { className: 'btn-secondary-cyber', onClick: () => setIsAddHabitOpen(true) }, '+ Add Habit')
+        )
+      ),
+      h('div', { className: 'command-center-grid' },
+        h('div', { className: 'glass-card hero-gauge-card' },
+          h('div', { className: 'card-top-tag' }, "TODAY'S EXECUTION GAUGE"),
+          h('div', { className: 'gauge-content' },
+            h('div', { className: 'svg-gauge-wrapper' },
+              h('svg', { className: 'circular-progress-svg', viewBox: '0 0 160 160', width: 150, height: 150 },
+                h('defs', null,
+                  h('linearGradient', { id: 'gaugeGradient', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                    h('stop', { offset: '0%', stopColor: '#D4FF00' }),
+                    h('stop', { offset: '50%', stopColor: '#00F59B' }),
+                    h('stop', { offset: '100%', stopColor: '#06B6D4' })
+                  )
+                ),
+                h('circle', { className: 'gauge-bg-circle', cx: 80, cy: 80, r: radius, strokeWidth: 12, fill: 'transparent' }),
+                h('circle', {
+                  className: 'gauge-progress-circle',
+                  cx: 80, cy: 80, r: radius, strokeWidth: 12,
+                  strokeDasharray: circumference,
+                  strokeDashoffset: strokeDashoffset,
+                  strokeLinecap: 'round',
+                  fill: 'transparent'
+                })
+              ),
+              h('div', { className: 'gauge-center-text' },
+                h('span', { className: 'gauge-percentage-number' }, `${todayCompletionRate}%`),
+                h('span', { className: 'gauge-label' }, 'COMPLETED')
+              )
+            ),
+            h('div', { className: 'gauge-stats-details' },
+              h('div', { className: 'gauge-metric-item' },
+                h('span', { className: 'metric-title' }, 'Active Habits'),
+                h('span', { className: 'metric-val' }, `${completedCount} / ${activeHabits.length} Done`)
+              ),
+              h('div', { className: 'gauge-metric-item' },
+                h('span', { className: 'metric-title' }, 'Daily Streak'),
+                h('span', { className: 'metric-val highlight-chartreuse' }, `🔥 ${user.currentStreak} Days`)
+              ),
+              h('div', { className: 'gauge-metric-item' },
+                h('span', { className: 'metric-title' }, 'Spark Points'),
+                h('span', { className: 'metric-val highlight-amber' }, `⚡ ${user.sparkPoints} Pts`)
+              )
+            )
+          )
+        ),
+        h('div', { className: 'glass-card quick-habits-card' },
+          h('div', { className: 'card-top-tag-row' },
+            h('span', { className: 'card-top-tag' }, 'QUICK-ACCESS HABIT STRIP'),
+            h('span', { className: 'card-top-hint' }, '1-Tap Log, Skip or Pause')
+          ),
+          h('div', { className: 'quick-chips-container' },
+            activeHabits.map(hItem => h('div', {
+              key: hItem.id,
+              className: `quick-habit-chip ${hItem.completedToday ? 'completed' : ''} ${hItem.status === 'skipped' ? 'skipped' : ''}`
+            },
+              h('div', { className: 'chip-left', onClick: () => toggleHabit(hItem.id) },
+                h('div', { className: 'chip-icon-box', style: { borderColor: hItem.color } }, hItem.icon),
+                h('div', { className: 'chip-text-meta' },
+                  h('span', { className: 'chip-name' }, hItem.name),
+                  h('span', { className: 'chip-streak' }, `🔥 ${hItem.streak}d • ${hItem.frequencyType === 'times_per_day' ? `${hItem.todayCount || 0}/${hItem.frequencyCount} Today` : hItem.category}`)
+                )
+              ),
+              h('div', { className: 'chip-actions' },
+                h('button', {
+                  className: `chip-check-btn ${hItem.completedToday ? 'checked' : ''}`,
+                  onClick: () => toggleHabit(hItem.id),
+                  title: hItem.completedToday ? 'Mark Incomplete' : 'Complete'
+                }, hItem.completedToday ? '✓' : '○'),
+                h('button', {
+                  className: 'chip-skip-btn',
+                  onClick: () => openSkipModal(hItem.id, hItem.name),
+                  title: 'Skip Today'
+                }, 'Skip'),
+                h('button', {
+                  className: 'chip-pause-btn',
+                  onClick: () => openPauseModal(hItem.id, hItem.name),
+                  title: 'Pause Life-Phase'
+                }, '⏸')
+              )
+            )),
+            pausedHabits.length > 0 && h('div', { className: 'paused-habits-notice' },
+              h('span', null, `⏸️ ${pausedHabits.length} habit(s) frozen: ${pausedHabits.map(p => p.name).join(', ')}`),
+              h('button', {
+                className: 'btn-link-chartreuse',
+                onClick: () => {
+                  setActiveSection('habits');
+                  document.getElementById('habits')?.scrollIntoView({ behavior: 'smooth' });
+                }
+              }, 'Manage Hub')
+            )
+          )
+        )
+      ),
+      h('div', { className: 'command-subgrid' },
+        h('div', { className: 'glass-card home-priorities-card' },
+          h('div', { className: 'card-top-tag-row' },
+            h('span', { className: 'card-top-tag' }, 'URGENT & HIGH PRIORITIES'),
+            h('button', {
+              className: 'btn-link-chartreuse',
+              onClick: () => {
+                setActiveSection('todos');
+                document.getElementById('todos')?.scrollIntoView({ behavior: 'smooth' });
+              }
+            }, 'View All Directives →')
+          ),
+          h('div', { className: 'home-tasks-list' },
+            pendingTasks.length === 0 ? h('div', { className: 'tasks-all-clear' }, '🎉 All top daily priorities cleared!') :
+            pendingTasks.map(t => h('div', { key: t.id, className: 'home-task-item' },
+              h('button', { className: 'task-checkbox', onClick: () => toggleTask(t.id) },
+                h('span', { className: 'check-box-frame' }, t.completed ? '✓' : '')
+              ),
+              h('div', { className: 'task-content-block' },
+                h('span', { className: 'task-text-title' }, t.title),
+                h('div', { className: 'task-sub-tags' },
+                  h('span', { className: `priority-pill priority-${t.priority}` }, t.priority.toUpperCase()),
+                  t.dueTime && h('span', { className: 'time-badge' }, `⏰ ${t.dueTime}`),
+                  h('span', { className: 'cat-badge' }, `📁 ${t.category}`)
+                )
+              )
+            ))
+          )
+        ),
+        h('div', { className: 'glass-card telemetry-card' },
+          h('div', { className: 'card-top-tag' }, 'PERFORMANCE TELEMETRY'),
+          h('div', { className: 'telemetry-stat-boxes' },
+            h('div', { className: 'stat-box' },
+              h('span', { className: 'stat-num' }, user.totalHabitsCompleted),
+              h('span', { className: 'stat-desc' }, 'Habits Completed')
+            ),
+            h('div', { className: 'stat-box' },
+              h('span', { className: 'stat-num highlight-chartreuse' }, `${user.bestStreak} Days`),
+              h('span', { className: 'stat-desc' }, 'All-Time Best Streak')
+            ),
+            h('div', { className: 'stat-box' },
+              h('span', { className: 'stat-num highlight-amber' }, user.levelTitle),
+              h('span', { className: 'stat-desc' }, 'Progression Tier')
+            ),
+            h('div', { className: 'stat-box' },
+              h('span', { className: 'stat-num highlight-cyan' }, `🛡️ ${user.streakShields}`),
+              h('span', { className: 'stat-desc' }, 'Streak Shields Active')
+            )
+          )
+        )
+      )
+    );
+  }
+
+  function ScheduleArchitect() {
+    const { schedule, toggleScheduleBlockToday, deleteScheduleBlock, setIsAddScheduleOpen } = useHabitly();
+    const [selectedDay, setSelectedDay] = useState('today');
+    const [currentTimeStr, setCurrentTimeStr] = useState('');
+
+    useEffect(() => {
+      const update = () => {
+        const now = new Date();
+        const hVal = now.getHours().toString().padStart(2, '0');
+        const mVal = now.getMinutes().toString().padStart(2, '0');
+        setCurrentTimeStr(`${hVal}:${mVal}`);
+      };
+      update();
+      const intv = setInterval(update, 10000);
+      return () => clearInterval(intv);
+    }, []);
+
+    const days = [
+      { id: 'today', label: '⚡ Today' },
+      { id: 'mon', label: 'Mon' },
+      { id: 'tue', label: 'Tue' },
+      { id: 'wed', label: 'Wed' },
+      { id: 'thu', label: 'Thu' },
+      { id: 'fri', label: 'Fri' },
+      { id: 'sat', label: 'Sat' },
+      { id: 'sun', label: 'Sun' },
+    ];
+
+    const getTodayCode = () => {
+      const d = new Date().getDay();
+      return ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][d];
+    };
+
+    const activeDay = selectedDay === 'today' ? getTodayCode() : selectedDay;
+    const filtered = schedule.filter(b => b.days.includes(activeDay));
+
+    const isLive = (st, et) => selectedDay === 'today' && currentTimeStr >= st && currentTimeStr <= et;
+
+    return h('section', { id: 'schedule', className: 'dashboard-section section-schedule-hub in-view' },
+      h('div', { className: 'section-header-row' },
+        h('div', null,
+          h('div', { className: 'section-eyebrow' }, 'CHRONO ARCHITECTURE'),
+          h('h2', { className: 'section-main-title' }, 'Custom Schedule & Time-Blocking'),
+          h('p', { className: 'section-subtitle' }, 'Architect your daily flow. Align high-energy time blocks with habits and smart alerts.')
+        ),
+        h('div', { className: 'section-header-actions' },
+          h('div', { className: 'current-clock-pill' },
+            h('span', { className: 'live-dot' }),
+            h('span', { className: 'clock-digits' }, `LOCAL TIME: ${currentTimeStr || '--:--'}`)
+          ),
+          h('button', { className: 'btn-primary-neon', onClick: () => setIsAddScheduleOpen(true) }, '+ Add Time Block')
+        )
+      ),
+      h('div', { className: 'schedule-day-tabs' },
+        days.map(d => h('button', {
+          key: d.id,
+          className: `schedule-day-tab ${selectedDay === d.id ? 'active' : ''}`,
+          onClick: () => setSelectedDay(d.id)
+        }, d.label))
+      ),
+      h('div', { className: 'schedule-timeline-stream' },
+        filtered.length === 0 ? h('div', { className: 'glass-card' },
+          h('p', null, 'No scheduled blocks for this day. Click "+ Add Time Block" to create one!')
+        ) :
+        filtered.map(block => {
+          const liveNow = isLive(block.startTime, block.endTime);
+          return h('div', {
+            key: block.id,
+            className: `glass-card schedule-block-card ${block.completedToday ? 'is-completed' : ''} ${liveNow ? 'is-live-now' : ''}`,
+            style: { borderLeftColor: block.color }
+          },
+            liveNow && h('div', { className: 'live-now-badge' },
+              h('span', { className: 'pulse-ring' }),
+              h('span', null, 'ACTIVE TIME BLOCK NOW')
+            ),
+            h('div', { className: 'block-time-col' },
+              h('div', { className: 'time-range-box' },
+                h('span', { className: 'time-start' }, block.startTime),
+                h('span', { className: 'time-sep' }, 'to'),
+                h('span', { className: 'time-end' }, block.endTime)
+              ),
+              h('span', { className: 'category-pill', style: { color: block.color } }, block.category)
+            ),
+            h('div', { className: 'block-details-col' },
+              h('div', { className: 'block-title-row' },
+                h('span', { className: 'block-icon' }, block.icon),
+                h('h3', { className: 'block-title' }, block.title)
+              ),
+              h('div', { className: 'block-days-pills' },
+                block.days.map(dy => h('span', { key: dy, className: `day-mini-tag ${dy === activeDay ? 'current' : ''}` }, dy.toUpperCase()))
+              )
+            ),
+            h('div', { className: 'block-actions-col' },
+              h('button', {
+                className: `btn-check-schedule ${block.completedToday ? 'completed' : ''}`,
+                onClick: () => toggleScheduleBlockToday(block.id)
+              }, block.completedToday ? '✓ Executed' : '○ Mark Done'),
+              h('button', { className: 'btn-delete-ghost', onClick: () => { if (confirm(`Delete "${block.title}"?`)) deleteScheduleBlock(block.id); } }, '🗑')
+            )
+          );
+        })
+      )
+    );
+  }
+
+  function SmartReminderCenter() {
+    const { reminders, toggleReminder, deleteReminder, setIsAddReminderOpen, user, requestNotificationPermission, testNotification } = useHabitly();
+
+    return h('div', { className: 'glass-card smart-reminders-panel' },
+      h('div', { className: 'card-top-tag-row' },
+        h('div', { className: 'flex-align-center gap-8' },
+          h('span', { className: 'card-top-tag' }, 'SMART NOTIFICATIONS & REMINDERS'),
+          h('span', { className: 'badge-live-pulse' }, 'REAL-TIME')
+        ),
+        h('div', { className: 'flex-align-center gap-10' },
+          h('button', {
+            className: `btn-notification-toggle ${user.notificationsEnabled ? 'enabled' : 'disabled'}`,
+            onClick: async () => {
+              if (!user.notificationsEnabled) await requestNotificationPermission();
+              else testNotification('Smart Notification Test ⚡', 'All telemetry and reminder triggers are functioning optimally.');
+            }
+          }, user.notificationsEnabled ? '🔔 Web Alerts: Active' : '🔕 Enable Browser Alerts'),
+          h('button', { className: 'btn-secondary-cyber', onClick: () => setIsAddReminderOpen(true) }, '+ Add Reminder')
+        )
+      ),
+      h('p', { className: 'reminders-intro-text' },
+        'Habitly continuously evaluates your daily streak horizon and schedules intelligent micro-reminders to eliminate missed routines.'
+      ),
+      h('div', { className: 'reminders-grid-list' },
+        reminders.map(rem => h('div', { key: rem.id, className: `reminder-item-card ${rem.isActive ? 'is-active' : 'is-inactive'}` },
+          h('div', { className: 'reminder-header-row' },
+            h('div', { className: 'reminder-time-badge' },
+              h('span', { className: 'time-clock-icon' }, '⏰'),
+              h('span', { className: 'time-digits' }, rem.triggerTime)
+            ),
+            h('span', { className: `reminder-type-tag type-${rem.type}` }, rem.type.replace('_', ' ').toUpperCase())
+          ),
+          h('h4', { className: 'reminder-title' }, rem.title),
+          h('p', { className: 'reminder-message' }, `"${rem.message}"`),
+          h('div', { className: 'reminder-footer-row' },
+            h('div', { className: 'days-mini-pills' },
+              rem.days.map(d => h('span', { key: d, className: 'mini-day-pill' }, d.toUpperCase()))
+            ),
+            h('div', { className: 'reminder-actions' },
+              h('button', {
+                className: `btn-toggle-switch ${rem.isActive ? 'on' : 'off'}`,
+                onClick: () => toggleReminder(rem.id)
+              }, h('span', { className: 'switch-knob' })),
+              h('button', { className: 'btn-delete-ghost', onClick: () => deleteReminder(rem.id) }, '✕')
+            )
+          )
+        ))
+      )
+    );
+  }
+
+  function WidgetDock() {
+    const { habits, toggleHabit, user, setIsWidgetGuideOpen, addToast } = useHabitly();
+    const [pomoMode, setPomoMode] = useState('focus');
+    const [pomoTimeLeft, setPomoTimeLeft] = useState(25 * 60);
+    const [isPomoRunning, setIsPomoRunning] = useState(false);
+    const [pomoSessions, setPomoSessions] = useState(2);
+    const [quoteIndex, setQuoteIndex] = useState(0);
+    const [selectedHabitId, setSelectedHabitId] = useState(habits[0]?.id || '');
+
+    useEffect(() => {
+      let timer = null;
+      if (isPomoRunning && pomoTimeLeft > 0) {
+        timer = setInterval(() => setPomoTimeLeft(prev => prev - 1), 1000);
+      } else if (isPomoRunning && pomoTimeLeft === 0) {
+        setIsPomoRunning(false);
+        sounds.playTimerBell();
+        if (pomoMode === 'focus') {
+          setPomoSessions(c => c + 1);
+          addToast('Focus Session Crushed! 🍅', 'Take a 5-minute break!', 'achievement');
+          setPomoMode('shortBreak');
+          setPomoTimeLeft(5 * 60);
+        } else {
+          addToast('Break Complete! ⚡', 'Ready to focus?', 'info');
+          setPomoMode('focus');
+          setPomoTimeLeft(25 * 60);
+        }
+      }
+      return () => { if (timer) clearInterval(timer); };
+    }, [isPomoRunning, pomoTimeLeft, pomoMode]);
+
+    const formatTime = s => {
+      const m = Math.floor(s / 60).toString().padStart(2, '0');
+      const sec = (s % 60).toString().padStart(2, '0');
+      return `${m}:${sec}`;
+    };
+
+    const activeHabits = habits.filter(h => h.status !== 'paused');
+
+    return h('section', { id: 'widgets', className: 'dashboard-section section-widget-dock in-view' },
+      h('div', { className: 'section-header-row' },
+        h('div', null,
+          h('div', { className: 'section-eyebrow' }, 'MODULAR PRODUCTIVITY'),
+          h('h2', { className: 'section-main-title' }, 'Quick-Access Widget Dock'),
+          h('p', { className: 'section-subtitle' }, 'Tactical micro-tools designed for rapid execution and phone/desktop home screen embedding.')
+        ),
+        h('div', { className: 'section-header-actions' },
+          h('button', { className: 'btn-secondary-cyber', onClick: () => setIsWidgetGuideOpen(true) }, '📱 Install Widget to Phone')
+        )
+      ),
+      h('div', { className: 'widgets-grid-container' },
+        h('div', { className: 'glass-card widget-card pomodoro-widget' },
+          h('div', { className: 'widget-header' },
+            h('div', { className: 'widget-title-wrap' },
+              h('span', { className: 'widget-icon' }, '⏱️'),
+              h('span', { className: 'widget-heading' }, 'POMODORO FOCUS')
+            ),
+            h('span', { className: 'widget-badge' }, `${pomoSessions} Sessions`)
+          ),
+          h('div', { className: 'pomo-modes-bar' },
+            h('button', { className: `pomo-mode-btn ${pomoMode === 'focus' ? 'active' : ''}`, onClick: () => { setIsPomoRunning(false); setPomoMode('focus'); setPomoTimeLeft(25*60); } }, '25m Focus'),
+            h('button', { className: `pomo-mode-btn ${pomoMode === 'shortBreak' ? 'active' : ''}`, onClick: () => { setIsPomoRunning(false); setPomoMode('shortBreak'); setPomoTimeLeft(5*60); } }, '5m Rest'),
+            h('button', { className: `pomo-mode-btn ${pomoMode === 'longBreak' ? 'active' : ''}`, onClick: () => { setIsPomoRunning(false); setPomoMode('longBreak'); setPomoTimeLeft(15*60); } }, '15m Rest')
+          ),
+          h('div', { className: 'pomo-display' },
+            h('div', { className: `pomo-digits ${isPomoRunning ? 'pulsing' : ''}` }, formatTime(pomoTimeLeft)),
+            h('span', { className: 'pomo-subtext' }, isPomoRunning ? '⚡ Focus State Active' : 'Ready')
+          ),
+          h('div', { className: 'pomo-controls' },
+            h('button', { className: `pomo-main-btn ${isPomoRunning ? 'running' : ''}`, onClick: () => { sounds.playClick(); setIsPomoRunning(!isPomoRunning); } }, isPomoRunning ? '⏸ Pause' : '▶ Start Focus'),
+            h('button', { className: 'pomo-reset-btn', onClick: () => { sounds.playClick(); setIsPomoRunning(false); setPomoTimeLeft(25*60); } }, '↺')
+          )
+        ),
+        h('div', { className: 'glass-card widget-card quick-log-widget' },
+          h('div', { className: 'widget-header' },
+            h('div', { className: 'widget-title-wrap' },
+              h('span', { className: 'widget-icon' }, '⚡'),
+              h('span', { className: 'widget-heading' }, '1-TAP QUICK LOGGER')
+            ),
+            h('span', { className: 'widget-badge neon-green' }, 'Instant')
+          ),
+          h('p', { className: 'widget-body-text' }, 'Select habit to toggle check-in immediately:'),
+          h('div', { className: 'quick-logger-form' },
+            h('select', { className: 'cyber-select', value: selectedHabitId, onChange: e => setSelectedHabitId(e.target.value) },
+              activeHabits.map(hItem => h('option', { key: hItem.id, value: hItem.id }, `${hItem.icon} ${hItem.name}`))
+            ),
+            h('button', { className: 'btn-primary-neon quick-log-submit', onClick: () => { if (selectedHabitId) toggleHabit(selectedHabitId); } }, '⚡ Execute 1-Tap Log')
+          )
+        ),
+        h('div', { className: 'glass-card widget-card streak-shield-widget' },
+          h('div', { className: 'widget-header' },
+            h('div', { className: 'widget-title-wrap' },
+              h('span', { className: 'widget-icon' }, '🛡️'),
+              h('span', { className: 'widget-heading' }, 'STREAK ARMOR')
+            ),
+            h('span', { className: 'widget-badge' }, `${user.streakShields} Available`)
+          ),
+          h('div', { className: 'shield-card-body' },
+            h('div', { className: 'shield-icon-visual' }, '🛡️'),
+            h('div', { className: 'shield-text-col' },
+              h('h4', { className: 'shield-title' }, 'Streak Protection Active'),
+              h('p', { className: 'shield-desc' }, 'Use Skip or Pause to freeze your streaks safely during life transitions.')
+            )
+          ),
+          h('div', { className: 'shield-stats-row' },
+            h('div', { className: 'shield-stat' },
+              h('span', { className: 's-label' }, 'Streak Status'),
+              h('span', { className: 's-val text-chartreuse' }, `🔥 ${user.currentStreak} Days`)
+            ),
+            h('div', { className: 'shield-stat' },
+              h('span', { className: 's-label' }, 'Armor State'),
+              h('span', { className: 's-val text-cyan' }, 'Shielded')
+            )
+          )
+        ),
+        h('div', { className: 'glass-card widget-card stoic-quote-widget' },
+          h('div', { className: 'widget-header' },
+            h('div', { className: 'widget-title-wrap' },
+              h('span', { className: 'widget-icon' }, '📜'),
+              h('span', { className: 'widget-heading' }, 'STOIC PROTOCOL')
+            ),
+            h('button', { className: 'quote-refresh-btn', onClick: () => { sounds.playClick(); setQuoteIndex((quoteIndex + 1) % STOIC_QUOTES.length); } }, '↻ Next')
+          ),
+          h('div', { className: 'quote-body' },
+            h('span', { className: 'quote-marks' }, '“'),
+            h('p', { className: 'quote-text' }, STOIC_QUOTES[quoteIndex].text),
+            h('span', { className: 'quote-author' }, `— ${STOIC_QUOTES[quoteIndex].author}`)
+          )
+        )
+      )
+    );
+  }
+
+  function HabitTracker() {
+    const { habits, toggleHabit, incrementHabitCount, decrementHabitCount, deleteHabit, openSkipModal, openPauseModal, resumeHabit, setIsAddHabitOpen } = useHabitly();
+    const [selectedCategory, setSelectedCategory] = useState('all');
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const categories = [
+      { id: 'all', label: 'All Categories' },
+      { id: 'mindfulness', label: '🧘 Mindfulness' },
+      { id: 'productivity', label: '⚡ Productivity' },
+      { id: 'health', label: '💧 Health' },
+      { id: 'fitness', label: '🏋️ Fitness' },
+      { id: 'learning', label: '📚 Learning' },
+      { id: 'creativity', label: '🎨 Creativity' },
+    ];
+
+    const filtered = habits.filter(h => {
+      const matchCat = selectedCategory === 'all' || h.category === selectedCategory;
+      const matchSearch = h.name.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchCat && matchSearch;
+    });
+
+    const formatFreq = h => {
+      if (h.frequencyType === 'times_per_day') return `🔢 ${h.frequencyCount}x / DAY`;
+      if (h.frequencyType === 'days_per_week') return `📅 ${h.frequencyCount} DAYS / WEEK`;
+      if (h.frequencyType === 'interval') return `⏱ EVERY ${h.frequencyCount} DAYS`;
+      if (h.frequencyType === 'weekdays') return `💼 WEEKDAYS`;
+      if (h.frequencyType === 'weekends') return `🏖 WEEKENDS`;
+      return `⚡ DAILY`;
+    };
+
+    return h('section', { id: 'habits', className: 'dashboard-section section-habit-hub in-view' },
+      h('div', { className: 'section-header-row' },
+        h('div', null,
+          h('div', { className: 'section-eyebrow' }, 'HABIT ARCHITECTURE'),
+          h('h2', { className: 'section-main-title' }, 'Habit Tracker Hub'),
+          h('p', { className: 'section-subtitle' }, 'Configure custom frequencies (daily, multiple times/day, days/week, or intervals), observe visual progress bars, and manage life-phase skips or pauses.')
+        ),
+        h('div', { className: 'section-header-actions' },
+          h('button', { className: 'btn-primary-neon', onClick: () => setIsAddHabitOpen(true) }, '+ Create New Habit')
+        )
+      ),
+      h('div', { className: 'filter-controls-bar' },
+        h('div', { className: 'search-box-wrapper' },
+          h('span', { className: 'search-icon' }, '🔍'),
+          h('input', {
+            type: 'text',
+            className: 'search-input',
+            placeholder: 'Search habits...',
+            value: searchQuery,
+            onChange: e => setSearchQuery(e.target.value)
+          })
+        ),
+        h('div', { className: 'category-pills-row' },
+          categories.map(c => h('button', {
+            key: c.id,
+            className: `filter-pill ${selectedCategory === c.id ? 'active' : ''}`,
+            onClick: () => setSelectedCategory(c.id)
+          }, c.label))
+        )
+      ),
+      h('div', { className: 'habits-grid' },
+        filtered.map(habit => {
+          const progressPercent = Math.min(100, Math.round((habit.completedDays / habit.targetDays) * 100));
+          const isPaused = habit.status === 'paused';
+          const isSkipped = habit.status === 'skipped';
+          const isMultiTimes = habit.frequencyType === 'times_per_day';
+
+          return h('div', {
+            key: habit.id,
+            className: `glass-card habit-master-card ${habit.completedToday ? 'is-completed' : ''} ${isPaused ? 'is-paused' : ''} ${isSkipped ? 'is-skipped' : ''}`
+          },
+            h('div', { className: 'card-top-header' },
+              h('div', { className: 'habit-identity' },
+                h('div', { className: 'habit-icon-hex', style: { borderColor: habit.color } }, habit.icon),
+                h('div', { className: 'habit-title-col' },
+                  h('h3', { className: 'habit-title' }, habit.name),
+                  h('div', { className: 'habit-tags-line' },
+                    h('span', { className: 'habit-tag-category' }, habit.category.toUpperCase()),
+                    h('span', { className: 'habit-tag-freq' }, formatFreq(habit)),
+                    isPaused && h('span', { className: 'habit-tag-paused' }, `⏸ PAUSED (${habit.pauseReason || 'Life Phase'})`),
+                    isSkipped && h('span', { className: 'habit-tag-skipped' }, `🛡️ SKIPPED (${habit.skipReason || 'Rest Day'})`)
+                  )
+                )
+              ),
+              h('div', { className: 'habit-header-right' },
+                h('div', { className: 'streak-counter-pill' },
+                  h('span', { className: 'flame-icon' }, '🔥'),
+                  h('span', { className: 'streak-num' }, habit.streak),
+                  h('span', { className: 'streak-unit' }, 'STREAK')
+                )
+              )
+            ),
+            h('div', { className: 'habit-progress-section' },
+              h('div', { className: 'progress-label-row' },
+                h('span', { className: 'progress-title' }, 'Milestone Progression'),
+                h('span', { className: 'progress-fraction' }, `${habit.completedDays} / ${habit.targetDays} Days (${progressPercent}%)`)
+              ),
+              h('div', { className: 'neon-progress-track' },
+                h('div', { className: 'neon-progress-fill', style: { width: `${progressPercent}%`, backgroundColor: habit.color } })
+              )
+            ),
+
+            // Daily Stepper if times_per_day
+            isMultiTimes && !isPaused && h('div', { className: 'daily-frequency-stepper-box' },
+              h('span', { className: 'stepper-label' }, "Today's Frequency Progress:"),
+              h('div', { className: 'stepper-controls-row' },
+                h('button', {
+                  className: 'stepper-btn minus',
+                  onClick: () => decrementHabitCount(habit.id),
+                  disabled: (habit.todayCount || 0) <= 0
+                }, '-'),
+                h('div', { className: 'stepper-display' },
+                  h('span', { className: 'stepper-current' }, habit.todayCount || 0),
+                  h('span', { className: 'stepper-divider' }, '/'),
+                  h('span', { className: 'stepper-target' }, `${habit.frequencyCount} Times`)
+                ),
+                h('button', {
+                  className: 'stepper-btn plus',
+                  onClick: () => incrementHabitCount(habit.id),
+                  disabled: (habit.todayCount || 0) >= habit.frequencyCount
+                }, '+')
+              )
+            ),
+
+            h('div', { className: 'habit-card-footer' },
+              isPaused ? h('button', { className: 'btn-primary-neon resume-btn', onClick: () => resumeHabit(habit.id) }, '▶ Resume Habit') :
+              h('button', {
+                className: `btn-check-habit ${habit.completedToday ? 'completed' : ''}`,
+                onClick: () => toggleHabit(habit.id)
+              }, habit.completedToday ? '✓ Crushed Today' : '○ Mark Complete'),
+              !isPaused && h('div', { className: 'secondary-action-group' },
+                h('button', { className: 'btn-action-ghost', onClick: () => openSkipModal(habit.id, habit.name) }, 'Skip 🛡️'),
+                h('button', { className: 'btn-action-ghost', onClick: () => openPauseModal(habit.id, habit.name) }, 'Pause ⏸')
+              ),
+              h('button', { className: 'btn-delete-ghost', onClick: () => { if (confirm(`Delete "${habit.name}"?`)) deleteHabit(habit.id); } }, '🗑')
+            )
+          );
+        })
+      )
+    );
+  }
+
+  function TodoHub() {
+    const { tasks, toggleTask, addTask, deleteTask } = useHabitly();
+    const [newTitle, setNewTitle] = useState('');
+    const [newPriority, setNewPriority] = useState('high');
+    const [newDueTime, setNewDueTime] = useState('');
+    const [filterPriority, setFilterPriority] = useState('all');
+
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter(t => t.completed).length;
+    const rate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+    const filtered = tasks.filter(t => {
+      if (filterPriority === 'all') return true;
+      if (filterPriority === 'completed') return t.completed;
+      if (filterPriority === 'pending') return !t.completed;
+      return t.priority === filterPriority;
+    });
+
+    const handleCreate = e => {
+      e.preventDefault();
+      if (!newTitle.trim()) return;
+      addTask(newTitle.trim(), newPriority, 'Today', newDueTime, 'Engineering');
+      setNewTitle('');
+      setNewDueTime('');
+    };
+
+    return h('section', { id: 'todos', className: 'dashboard-section section-todo-hub in-view' },
+      h('div', { className: 'section-header-row' },
+        h('div', null,
+          h('div', { className: 'section-eyebrow' }, 'DAILY EXECUTION'),
+          h('h2', { className: 'section-main-title' }, 'Daily Priorities Hub'),
+          h('p', { className: 'section-subtitle' }, 'Laser-focus on high-leverage directives. Track priority weight, time blocks, and completion metrics.')
+        ),
+        h('div', { className: 'task-stats-badge' },
+          h('span', { className: 'task-stat-number' }, `${completedTasks}/${totalTasks} Done`),
+          h('span', { className: 'task-stat-rate' }, ` (${rate}%)`)
+        )
+      ),
+      h('div', { className: 'todo-layout-grid' },
+        h('div', { className: 'glass-card new-task-card' },
+          h('div', { className: 'card-top-tag' }, 'NEW DIRECTIVE PROTOCOL'),
+          h('form', { className: 'new-task-form', onSubmit: handleCreate },
+            h('div', { className: 'form-group' },
+              h('label', { className: 'form-label' }, 'Task Title'),
+              h('input', {
+                type: 'text',
+                className: 'cyber-input',
+                placeholder: 'e.g. Deploy release...',
+                value: newTitle,
+                onChange: e => setNewTitle(e.target.value),
+                required: true
+              })
+            ),
+            h('div', { className: 'form-row-grid' },
+              h('div', { className: 'form-group' },
+                h('label', { className: 'form-label' }, 'Priority'),
+                h('select', { className: 'cyber-select', value: newPriority, onChange: e => setNewPriority(e.target.value) },
+                  h('option', { value: 'urgent' }, '🔴 Urgent'),
+                  h('option', { value: 'high' }, '🟠 High'),
+                  h('option', { value: 'medium' }, '🟡 Medium'),
+                  h('option', { value: 'low' }, '🟢 Low')
+                )
+              ),
+              h('div', { className: 'form-group' },
+                h('label', { className: 'form-label' }, 'Time'),
+                h('input', { type: 'text', className: 'cyber-input', placeholder: '02:00 PM', value: newDueTime, onChange: e => setNewDueTime(e.target.value) })
+              )
+            ),
+            h('button', { type: 'submit', className: 'btn-primary-neon btn-block' }, '+ Add Daily Priority')
+          )
+        ),
+        h('div', { className: 'glass-card tasks-panel-card' },
+          h('div', { className: 'filter-pill-bar' },
+            ['all', 'urgent', 'high', 'medium', 'pending', 'completed'].map(f => h('button', {
+              key: f,
+              className: `filter-pill ${filterPriority === f ? 'active' : ''}`,
+              onClick: () => setFilterPriority(f)
+            }, f.toUpperCase()))
+          ),
+          h('div', { className: 'tasks-scroll-list', style: { marginTop: '14px' } },
+            filtered.map(t => h('div', { key: t.id, className: `task-row-item ${t.completed ? 'is-completed' : ''} priority-border-${t.priority}` },
+              h('button', { className: `task-custom-checkbox ${t.completed ? 'checked' : ''}`, onClick: () => toggleTask(t.id) }, t.completed ? '✓' : ''),
+              h('div', { className: 'task-body-col', onClick: () => toggleTask(t.id) },
+                h('span', { className: 'task-title-text' }, t.title),
+                h('div', { className: 'task-meta-tags' },
+                  h('span', { className: `priority-tag-badge priority-${t.priority}` }, t.priority.toUpperCase()),
+                  t.dueTime && h('span', { className: 'time-tag' }, `⏰ ${t.dueTime}`),
+                  h('span', { className: 'category-tag' }, `📁 ${t.category}`)
+                )
+              ),
+              h('button', { className: 'task-delete-btn', onClick: () => deleteTask(t.id) }, '✕')
+            ))
+          )
+        )
+      )
+    );
+  }
+
+  function AnalyticsHub() {
+    const { user } = useHabitly();
+    const canvasRef = useRef(null);
+
+    useEffect(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+      const width = rect.width;
+      const height = rect.height;
+      const padding = { top: 20, right: 20, bottom: 30, left: 35 };
+
+      ctx.clearRect(0, 0, width, height);
+      const points = [
+        { d: 'Mon', p: 70 }, { d: 'Tue', p: 85 }, { d: 'Wed', p: 60 },
+        { d: 'Thu', p: 90 }, { d: 'Fri', p: 100 }, { d: 'Sat', p: 75 }, { d: 'Sun', p: 95 }
+      ].map((pt, i, arr) => ({
+        x: padding.left + (i / (arr.length - 1)) * (width - padding.left - padding.right),
+        y: padding.top + ((100 - pt.p) / 100) * (height - padding.top - padding.bottom),
+        ...pt
+      }));
+
+      // Line
+      ctx.beginPath();
+      points.forEach((pt, i) => {
+        if (i === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      });
+      ctx.strokeStyle = '#D4FF00';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Points & Labels
+      points.forEach(pt => {
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#00F59B';
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.font = '10px JetBrains Mono, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(pt.d, pt.x, height - 8);
+      });
+    }, []);
+
+    const heatmapDays = Array.from({ length: 28 }, (_, i) => ({
+      day: i + 1,
+      intensity: (i % 4)
+    }));
+
+    return h('section', { id: 'analytics', className: 'dashboard-section section-analytics-hub in-view' },
+      h('div', { className: 'section-header-row' },
+        h('div', null,
+          h('div', { className: 'section-eyebrow' }, 'TELEMETRY & HEATMAPS'),
+          h('h2', { className: 'section-main-title' }, 'Analytics & Consistency Matrix'),
+          h('p', { className: 'section-subtitle' }, 'Visualize your compounding trajectory with 7-day velocity curves and a 4-week activity heatmap.')
+        ),
+        h('div', { className: 'analytics-score-pill' },
+          h('span', { className: 'score-title' }, 'CONSISTENCY INDEX'),
+          h('span', { className: 'score-val highlight-chartreuse' }, '92.4%')
+        )
+      ),
+      h('div', { className: 'analytics-grid' },
+        h('div', { className: 'glass-card chart-card' },
+          h('div', { className: 'card-top-tag-row' },
+            h('span', { className: 'card-top-tag' }, '7-DAY COMPLETION VELOCITY'),
+            h('span', { className: 'card-top-hint text-chartreuse' }, '↑ 14% vs Last Week')
+          ),
+          h('div', { className: 'canvas-wrapper' },
+            h('canvas', { ref: canvasRef, className: 'analytics-canvas' })
+          )
+        ),
+        h('div', { className: 'glass-card heatmap-card' },
+          h('div', { className: 'card-top-tag-row' },
+            h('span', { className: 'card-top-tag' }, '4-WEEK CONTRIBUTION HEATMAP'),
+            h('div', { className: 'heatmap-legend' },
+              h('span', { className: 'legend-label' }, 'Less'),
+              h('span', { className: 'legend-box level-0' }),
+              h('span', { className: 'legend-box level-1' }),
+              h('span', { className: 'legend-box level-2' }),
+              h('span', { className: 'legend-box level-3' }),
+              h('span', { className: 'legend-label' }, 'More')
+            )
+          ),
+          h('div', { className: 'heatmap-grid-matrix' },
+            heatmapDays.map(d => h('div', { key: d.day, className: `heatmap-cell cell-level-${d.intensity}` }, d.day))
+          ),
+          h('div', { className: 'heatmap-footer-stats' },
+            h('div', { className: 'h-stat' },
+              h('span', { className: 'h-stat-label' }, 'Habits Logged'),
+              h('span', { className: 'h-stat-num' }, user.totalHabitsCompleted)
+            ),
+            h('div', { className: 'h-stat' },
+              h('span', { className: 'h-stat-label' }, 'Best Streak'),
+              h('span', { className: 'h-stat-num text-chartreuse' }, `${user.bestStreak} Days`)
+            ),
+            h('div', { className: 'h-stat' },
+              h('span', { className: 'h-stat-label' }, 'Streak Armor'),
+              h('span', { className: 'h-stat-num text-cyan' }, `${user.streakShields} Shields`)
+            )
+          )
+        )
+      )
+    );
+  }
+
+  function RewardVault() {
+    const { rewards, user, claimReward, setIsAddRewardOpen } = useHabitly();
+
+    return h('section', { id: 'rewards', className: 'dashboard-section section-reward-vault in-view' },
+      h('div', { className: 'section-header-row' },
+        h('div', null,
+          h('div', { className: 'section-eyebrow' }, 'GAMIFICATION & INCENTIVES'),
+          h('h2', { className: 'section-main-title' }, 'Point & Reward Vault'),
+          h('p', { className: 'section-subtitle' }, 'Convert your Spark Points (⚡) into meaningful psychological rewards.')
+        ),
+        h('div', { className: 'vault-balance-card' },
+          h('div', { className: 'vault-balance-left' },
+            h('span', { className: 'balance-label' }, 'SPARK BALANCE'),
+            h('div', { className: 'balance-amount' },
+              h('span', { className: 'balance-icon' }, '⚡'),
+              h('span', { className: 'balance-digits' }, user.sparkPoints.toLocaleString())
+            )
+          ),
+          h('button', { className: 'btn-secondary-cyber', onClick: () => setIsAddRewardOpen(true) }, '+ Custom Reward')
+        )
+      ),
+      h('div', { className: 'rewards-grid' },
+        rewards.map(r => {
+          const isAffordable = user.sparkPoints >= r.cost;
+          const isUnlocked = user.level >= r.unlockedLevel;
+
+          return h('div', { key: r.id, className: `glass-card reward-card ${!isUnlocked ? 'is-locked' : ''}` },
+            h('div', { className: 'reward-card-top' },
+              h('div', { className: 'reward-icon-box' }, r.icon),
+              h('div', { className: 'reward-cost-badge' }, `⚡ ${r.cost} PTS`)
+            ),
+            h('div', { className: 'reward-card-body' },
+              h('h3', { className: 'reward-title' }, r.title),
+              h('p', { className: 'reward-desc' }, r.description),
+              h('div', { className: 'reward-meta-row' },
+                h('span', { className: 'reward-cat-tag' }, `📁 ${r.category}`),
+                h('span', { className: 'reward-claimed-tag' }, `Claimed: ${r.claimedCount}x`)
+              )
+            ),
+            h('div', { className: 'reward-card-footer' },
+              !isUnlocked ? h('button', { className: 'btn-locked-reward', disabled: true }, `🔒 Level ${r.unlockedLevel} Required`) :
+              h('button', {
+                className: `btn-claim-reward ${isAffordable ? 'active-claim' : 'disabled-claim'}`,
+                onClick: () => claimReward(r.id),
+                disabled: !isAffordable
+              }, isAffordable ? '🎁 Claim Reward' : `Need ${r.cost - user.sparkPoints} Pts`)
+            )
+          );
+        })
+      )
+    );
+  }
+
+  // Modals & Drawers
+  function ModalsAndToasts() {
+    const {
+      isAddHabitOpen, setIsAddHabitOpen, addHabit,
+      isAddScheduleOpen, setIsAddScheduleOpen, addScheduleBlock, habits,
+      isAddReminderOpen, setIsAddReminderOpen, addReminder,
+      skipModal, closeSkipModal, confirmSkipHabit,
+      pauseModal, closePauseModal, confirmPauseHabit,
+      isAddRewardOpen, setIsAddRewardOpen, addReward,
+      isWidgetGuideOpen, setIsWidgetGuideOpen,
+      isNotificationDrawerOpen, setIsNotificationDrawerOpen, notifications, markNotificationRead, clearAllNotifications, testNotification,
+      isLevelUpOpen, setIsLevelUpOpen, levelUpInfo,
+      toasts, removeToast
+    } = useHabitly();
+
+    // Add Habit state
+    const [hName, setHName] = useState('');
+    const [hCat, setHCat] = useState('mindfulness');
+    const [hFreqType, setHFreqType] = useState('daily');
+    const [hFreqCount, setHFreqCount] = useState(3);
+    const [hTarget, setHTarget] = useState(30);
+
+    // Add Schedule Block state
+    const [sTitle, setSTitle] = useState('');
+    const [sStart, setSStart] = useState('08:00');
+    const [sEnd, setSEnd] = useState('09:00');
+    const [sDays, setSDays] = useState(['mon', 'tue', 'wed', 'thu', 'fri']);
+    const [sCat, setSCat] = useState('Productivity');
+    const [sHabitId, setSHabitId] = useState('');
+
+    // Add Reminder state
+    const [remTitle, setRemTitle] = useState('');
+    const [remTime, setRemTime] = useState('08:00');
+    const [remDays, setRemDays] = useState(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']);
+    const [remType, setRemType] = useState('custom');
+    const [remMsg, setRemMsg] = useState('');
+
+    const [skipReason, setSkipReason] = useState('Sick / Physical Recovery');
+    const [pauseReason, setPauseReason] = useState('Final Exams / Academic Sprint');
+
+    const [rTitle, setRTitle] = useState('');
+    const [rCost, setRCost] = useState(200);
+
+    const toggleScheduleDay = d => {
+      if (sDays.includes(d)) {
+        if (sDays.length > 1) setSDays(sDays.filter(x => x !== d));
+      } else {
+        setSDays([...sDays, d]);
+      }
+    };
+
+    const toggleRemDay = d => {
+      if (remDays.includes(d)) {
+        if (remDays.length > 1) setRemDays(remDays.filter(x => x !== d));
+      } else {
+        setRemDays([...remDays, d]);
+      }
+    };
+
+    const dayLabels = [{ id: 'mon', l: 'M' }, { id: 'tue', l: 'T' }, { id: 'wed', l: 'W' }, { id: 'thu', l: 'T' }, { id: 'fri', l: 'F' }, { id: 'sat', l: 'S' }, { id: 'sun', l: 'S' }];
+
+    return h('div', null,
+      // Add Habit Modal
+      isAddHabitOpen && h('div', { className: 'modal-backdrop', onClick: () => setIsAddHabitOpen(false) },
+        h('div', { className: 'glass-modal-card modal-medium', onClick: e => e.stopPropagation() },
+          h('div', { className: 'modal-header' },
+            h('h3', { className: 'modal-title' }, '🎯 Create Custom Habit Protocol'),
+            h('button', { className: 'modal-close-btn', onClick: () => setIsAddHabitOpen(false) }, '✕')
+          ),
+          h('form', {
+            onSubmit: e => {
+              e.preventDefault();
+              if (hName.trim()) {
+                let count = 1;
+                if (hFreqType === 'times_per_day') count = Math.max(1, Number(hFreqCount) || 1);
+                if (hFreqType === 'days_per_week') count = Math.min(7, Math.max(1, Number(hFreqCount) || 1));
+                if (hFreqType === 'interval') count = Math.max(1, Number(hFreqCount) || 2);
+
+                addHabit({
+                  name: hName.trim(),
+                  category: hCat,
+                  frequencyType: hFreqType,
+                  frequencyCount: count,
+                  targetDays: Number(hTarget) || 30,
+                  icon: '🎯',
+                  color: '#00F59B'
+                });
+                setHName('');
+              }
+            }
+          },
+            h('div', { className: 'form-group' },
+              h('label', { className: 'form-label' }, 'Habit Name'),
+              h('input', { type: 'text', className: 'cyber-input', placeholder: 'e.g. Drink 8 Glasses of Water, 3 Focus Blocks...', value: hName, onChange: e => setHName(e.target.value), required: true, autoFocus: true })
+            ),
+            h('div', { className: 'form-row-grid', style: { marginTop: '12px' } },
+              h('div', { className: 'form-group' },
+                h('label', { className: 'form-label' }, 'Category'),
+                h('select', { className: 'cyber-select', value: hCat, onChange: e => setHCat(e.target.value) },
+                  h('option', { value: 'mindfulness' }, '🧘 Mindfulness'),
+                  h('option', { value: 'productivity' }, '⚡ Productivity'),
+                  h('option', { value: 'health' }, '💧 Health'),
+                  h('option', { value: 'fitness' }, '🏋️ Fitness'),
+                  h('option', { value: 'learning' }, '📚 Learning'),
+                  h('option', { value: 'creativity' }, '🎨 Creativity')
+                )
+              ),
+              h('div', { className: 'form-group' },
+                h('label', { className: 'form-label' }, 'Frequency Model'),
+                h('select', { className: 'cyber-select', value: hFreqType, onChange: e => setHFreqType(e.target.value) },
+                  h('option', { value: 'daily' }, '⚡ Daily (1x / Day)'),
+                  h('option', { value: 'times_per_day' }, '🔢 Multiple Times Per Day (Custom)'),
+                  h('option', { value: 'days_per_week' }, '📅 Days Per Week (e.g. 3x or 5x/wk)'),
+                  h('option', { value: 'interval' }, '⏱ Every N Days (e.g. Every 2 Days)'),
+                  h('option', { value: 'weekdays' }, '💼 Weekdays Only'),
+                  h('option', { value: 'weekends' }, '🏖 Weekends Only')
+                )
+              )
+            ),
+
+            // Dynamic Frequency Input
+            hFreqType === 'times_per_day' && h('div', { className: 'form-group custom-frequency-box', style: { marginTop: '12px' } },
+              h('label', { className: 'form-label highlight-chartreuse' }, 'Target Executions Per Day (e.g. 3 times, 8 glasses, 5 sets)'),
+              h('div', { className: 'frequency-input-row' },
+                h('input', { type: 'number', className: 'cyber-input', min: '1', max: '50', value: hFreqCount, onChange: e => setHFreqCount(Number(e.target.value)), required: true }),
+                h('span', { className: 'input-unit-tag' }, 'Times / Day')
+              )
+            ),
+
+            hFreqType === 'days_per_week' && h('div', { className: 'form-group custom-frequency-box', style: { marginTop: '12px' } },
+              h('label', { className: 'form-label highlight-chartreuse' }, 'Target Days Per Week (1 to 7)'),
+              h('div', { className: 'frequency-input-row' },
+                h('input', { type: 'number', className: 'cyber-input', min: '1', max: '7', value: hFreqCount, onChange: e => setHFreqCount(Number(e.target.value)), required: true }),
+                h('span', { className: 'input-unit-tag' }, 'Days / Week')
+              )
+            ),
+
+            hFreqType === 'interval' && h('div', { className: 'form-group custom-frequency-box', style: { marginTop: '12px' } },
+              h('label', { className: 'form-label highlight-chartreuse' }, 'Every N Days Interval'),
+              h('div', { className: 'frequency-input-row' },
+                h('input', { type: 'number', className: 'cyber-input', min: '2', max: '30', value: hFreqCount, onChange: e => setHFreqCount(Number(e.target.value)), required: true }),
+                h('span', { className: 'input-unit-tag' }, 'Day Interval')
+              )
+            ),
+
+            h('div', { className: 'modal-actions-row' },
+              h('button', { type: 'button', className: 'btn-secondary-cyber', onClick: () => setIsAddHabitOpen(false) }, 'Cancel'),
+              h('button', { type: 'submit', className: 'btn-primary-neon' }, '+ Create Habit')
+            )
+          )
+        )
+      ),
+
+      // Add Schedule Block Modal
+      isAddScheduleOpen && h('div', { className: 'modal-backdrop', onClick: () => setIsAddScheduleOpen(false) },
+        h('div', { className: 'glass-modal-card modal-medium', onClick: e => e.stopPropagation() },
+          h('div', { className: 'modal-header' },
+            h('h3', { className: 'modal-title' }, '📅 Create Custom Time Block'),
+            h('button', { className: 'modal-close-btn', onClick: () => setIsAddScheduleOpen(false) }, '✕')
+          ),
+          h('form', {
+            onSubmit: e => {
+              e.preventDefault();
+              if (sTitle.trim()) {
+                addScheduleBlock({
+                  title: sTitle.trim(),
+                  startTime: sStart,
+                  endTime: sEnd,
+                  days: sDays,
+                  category: sCat,
+                  color: '#6366F1',
+                  icon: '⚡',
+                  linkedHabitId: sHabitId || undefined
+                });
+                setSTitle('');
+              }
+            }
+          },
+            h('div', { className: 'form-group' },
+              h('label', { className: 'form-label' }, 'Time Block Name'),
+              h('input', { type: 'text', className: 'cyber-input', placeholder: 'e.g. Deep Coding Sprint', value: sTitle, onChange: e => setSTitle(e.target.value), required: true, autoFocus: true })
+            ),
+            h('div', { className: 'form-row-grid', style: { marginTop: '12px' } },
+              h('div', { className: 'form-group' },
+                h('label', { className: 'form-label' }, 'Start Time'),
+                h('input', { type: 'time', className: 'cyber-input', value: sStart, onChange: e => setSStart(e.target.value), required: true })
+              ),
+              h('div', { className: 'form-group' },
+                h('label', { className: 'form-label' }, 'End Time'),
+                h('input', { type: 'time', className: 'cyber-input', value: sEnd, onChange: e => setSEnd(e.target.value), required: true })
+              )
+            ),
+            h('div', { className: 'form-group', style: { marginTop: '12px' } },
+              h('label', { className: 'form-label' }, 'Active Days'),
+              h('div', { className: 'day-selector-row' },
+                dayLabels.map(d => h('button', {
+                  type: 'button',
+                  key: d.id,
+                  className: `day-toggle-btn ${sDays.includes(d.id) ? 'selected' : ''}`,
+                  onClick: () => toggleScheduleDay(d.id)
+                }, d.l))
+              )
+            ),
+            h('div', { className: 'form-row-grid', style: { marginTop: '12px' } },
+              h('div', { className: 'form-group' },
+                h('label', { className: 'form-label' }, 'Category'),
+                h('select', { className: 'cyber-select', value: sCat, onChange: e => setSCat(e.target.value) },
+                  h('option', { value: 'Productivity' }, '⚡ Productivity'),
+                  h('option', { value: 'Mindfulness' }, '🧘 Mindfulness'),
+                  h('option', { value: 'Fitness' }, '🏋️ Fitness'),
+                  h('option', { value: 'Health' }, '💧 Health'),
+                  h('option', { value: 'Learning' }, '📚 Learning')
+                )
+              ),
+              h('div', { className: 'form-group' },
+                h('label', { className: 'form-label' }, 'Link Habit (Optional)'),
+                h('select', { className: 'cyber-select', value: sHabitId, onChange: e => setSHabitId(e.target.value) },
+                  h('option', { value: '' }, 'None'),
+                  habits.map(hItem => h('option', { key: hItem.id, value: hItem.id }, `${hItem.icon} ${hItem.name}`))
+                )
+              )
+            ),
+            h('div', { className: 'modal-actions-row' },
+              h('button', { type: 'button', className: 'btn-secondary-cyber', onClick: () => setIsAddScheduleOpen(false) }, 'Cancel'),
+              h('button', { type: 'submit', className: 'btn-primary-neon' }, '+ Add to Schedule')
+            )
+          )
+        )
+      ),
+
+      // Add Smart Reminder Modal
+      isAddReminderOpen && h('div', { className: 'modal-backdrop', onClick: () => setIsAddReminderOpen(false) },
+        h('div', { className: 'glass-modal-card modal-medium', onClick: e => e.stopPropagation() },
+          h('div', { className: 'modal-header' },
+            h('h3', { className: 'modal-title' }, '🔔 Create Smart Reminder'),
+            h('button', { className: 'modal-close-btn', onClick: () => setIsAddReminderOpen(false) }, '✕')
+          ),
+          h('form', {
+            onSubmit: e => {
+              e.preventDefault();
+              if (remTitle.trim()) {
+                addReminder({
+                  title: remTitle.trim(),
+                  triggerTime: remTime,
+                  days: remDays,
+                  type: remType,
+                  message: remMsg.trim() || 'Focus protocol reminder activated.',
+                  isActive: true
+                });
+                setRemTitle('');
+                setRemMsg('');
+              }
+            }
+          },
+            h('div', { className: 'form-group' },
+              h('label', { className: 'form-label' }, 'Reminder Label'),
+              h('input', { type: 'text', className: 'cyber-input', placeholder: 'e.g. Afternoon Water Reset', value: remTitle, onChange: e => setRemTitle(e.target.value), required: true, autoFocus: true })
+            ),
+            h('div', { className: 'form-row-grid', style: { marginTop: '12px' } },
+              h('div', { className: 'form-group' },
+                h('label', { className: 'form-label' }, 'Trigger Time'),
+                h('input', { type: 'time', className: 'cyber-input', value: remTime, onChange: e => setRemTime(e.target.value), required: true })
+              ),
+              h('div', { className: 'form-group' },
+                h('label', { className: 'form-label' }, 'Intelligence Type'),
+                h('select', { className: 'cyber-select', value: remType, onChange: e => setRemType(e.target.value) },
+                  h('option', { value: 'custom' }, '⚡ Custom Routine'),
+                  h('option', { value: 'habit' }, '🎯 Pre-Habit Prompt'),
+                  h('option', { value: 'schedule' }, '📅 Schedule Block Start'),
+                  h('option', { value: 'streak_shield' }, '🛡️ Streak Shield Warning'),
+                  h('option', { value: 'hydration' }, '💧 Hydration Check')
+                )
+              )
+            ),
+            h('div', { className: 'form-group', style: { marginTop: '12px' } },
+              h('label', { className: 'form-label' }, 'Active Days'),
+              h('div', { className: 'day-selector-row' },
+                dayLabels.map(d => h('button', {
+                  type: 'button',
+                  key: d.id,
+                  className: `day-toggle-btn ${remDays.includes(d.id) ? 'selected' : ''}`,
+                  onClick: () => toggleRemDay(d.id)
+                }, d.l))
+              )
+            ),
+            h('div', { className: 'form-group', style: { marginTop: '12px' } },
+              h('label', { className: 'form-label' }, 'Motivational Alert Message'),
+              h('input', { type: 'text', className: 'cyber-input', placeholder: 'What should appear on your screen?', value: remMsg, onChange: e => setRemMsg(e.target.value) })
+            ),
+            h('div', { className: 'modal-actions-row' },
+              h('button', { type: 'button', className: 'btn-secondary-cyber', onClick: () => setIsAddReminderOpen(false) }, 'Cancel'),
+              h('button', { type: 'submit', className: 'btn-primary-neon' }, '+ Set Reminder')
+            )
+          )
+        )
+      ),
+
+      // Notification Drawer
+      isNotificationDrawerOpen && h('div', { className: 'notification-drawer-backdrop', onClick: () => setIsNotificationDrawerOpen(false) },
+        h('div', { className: 'glass-modal-card notification-drawer-panel', onClick: e => e.stopPropagation() },
+          h('div', { className: 'drawer-header-row' },
+            h('div', { className: 'drawer-title-wrap' },
+              h('span', { className: 'drawer-bell-icon' }, '🔔'),
+              h('h3', { className: 'drawer-title' }, 'Smart Notifications & Reminders')
+            ),
+            h('div', { className: 'drawer-actions-top' },
+              h('button', { className: 'btn-link-chartreuse', onClick: () => testNotification('Test Pulse ⚡', 'Notification stream active.') }, 'Test Alert'),
+              h('button', { className: 'btn-delete-ghost', onClick: clearAllNotifications }, 'Clear All'),
+              h('button', { className: 'modal-close-btn', onClick: () => setIsNotificationDrawerOpen(false) }, '✕')
+            )
+          ),
+          h('div', { className: 'notification-items-stream' },
+            notifications.length === 0 ? h('div', { className: 'empty-notifs' },
+              h('span', { className: 'empty-bell' }, '🔕'),
+              h('p', null, 'No new notifications. Everything on schedule!')
+            ) :
+            notifications.map(n => h('div', {
+              key: n.id,
+              className: `drawer-notif-card notif-${n.type} ${n.isRead ? 'read' : 'unread'}`,
+              onClick: () => markNotificationRead(n.id)
+            },
+              h('div', { className: 'notif-top' },
+                h('span', { className: 'notif-title' }, n.title),
+                h('span', { className: 'notif-time' }, n.timestamp)
+              ),
+              h('p', { className: 'notif-body' }, n.message),
+              !n.isRead && h('span', { className: 'unread-dot-badge' })
+            ))
+          )
+        )
+      ),
+
+      // Skip Modal
+      skipModal.isOpen && h('div', { className: 'modal-backdrop', onClick: closeSkipModal },
+        h('div', { className: 'glass-modal-card modal-medium', onClick: e => e.stopPropagation() },
+          h('div', { className: 'modal-header' },
+            h('h3', { className: 'modal-title' }, '🛡️ Skip Habit (Streak Armor)'),
+            h('button', { className: 'modal-close-btn', onClick: closeSkipModal }, '✕')
+          ),
+          h('p', { className: 'modal-desc-highlight' }, `Skipping "${skipModal.habitName}" preserves your streak without penalty.`),
+          h('div', { className: 'form-group' },
+            h('label', { className: 'form-label' }, 'Select Skip Reason'),
+            ['Sick / Physical Recovery', 'Unavoidable Travel', 'Cognitive Overload / Rest Day', 'Family Emergency'].map(r => h('button', {
+              key: r,
+              type: 'button',
+              className: `reason-select-btn ${skipReason === r ? 'active' : ''}`,
+              onClick: () => setSkipReason(r)
+            }, r))
+          ),
+          h('div', { className: 'modal-actions-row' },
+            h('button', { className: 'btn-secondary-cyber', onClick: closeSkipModal }, 'Cancel'),
+            h('button', { className: 'btn-primary-neon', onClick: () => confirmSkipHabit(skipReason) }, '🛡️ Protect Streak & Skip')
+          )
+        )
+      ),
+
+      // Pause Modal
+      pauseModal.isOpen && h('div', { className: 'modal-backdrop', onClick: closePauseModal },
+        h('div', { className: 'glass-modal-card modal-medium', onClick: e => e.stopPropagation() },
+          h('div', { className: 'modal-header' },
+            h('h3', { className: 'modal-title' }, '⏸️ Life-Phase Habit Freeze'),
+            h('button', { className: 'modal-close-btn', onClick: closePauseModal }, '✕')
+          ),
+          h('p', { className: 'modal-desc-highlight' }, `Freeze "${pauseModal.habitName}" during major life transitions without losing progress.`),
+          h('div', { className: 'form-group' },
+            h('label', { className: 'form-label' }, 'Select Life Phase'),
+            ['Final Exams / Academic Sprint', 'Major Career Transition', 'Injury / Rehab', 'Moving Homes'].map(r => h('button', {
+              key: r,
+              type: 'button',
+              className: `reason-select-btn ${pauseReason === r ? 'active' : ''}`,
+              onClick: () => setPauseReason(r)
+            }, r))
+          ),
+          h('div', { className: 'modal-actions-row' },
+            h('button', { className: 'btn-secondary-cyber', onClick: closePauseModal }, 'Cancel'),
+            h('button', { className: 'btn-primary-neon', onClick: () => confirmPauseHabit(pauseReason, 14) }, '⏸ Freeze Habit')
+          )
+        )
+      ),
+
+      // Add Reward Modal
+      isAddRewardOpen && h('div', { className: 'modal-backdrop', onClick: () => setIsAddRewardOpen(false) },
+        h('div', { className: 'glass-modal-card modal-medium', onClick: e => e.stopPropagation() },
+          h('div', { className: 'modal-header' },
+            h('h3', { className: 'modal-title' }, '🏆 Add Custom Reward'),
+            h('button', { className: 'modal-close-btn', onClick: () => setIsAddRewardOpen(false) }, '✕')
+          ),
+          h('form', {
+            onSubmit: e => {
+              e.preventDefault();
+              if (rTitle.trim()) {
+                addReward({ title: rTitle.trim(), cost: Number(rCost) || 100, icon: '🎁', category: 'Lifestyle', description: 'Custom reward.' });
+                setRTitle('');
+              }
+            }
+          },
+            h('div', { className: 'form-group' },
+              h('label', { className: 'form-label' }, 'Reward Name'),
+              h('input', { type: 'text', className: 'cyber-input', value: rTitle, onChange: e => setRTitle(e.target.value), required: true })
+            ),
+            h('div', { className: 'form-group', style: { marginTop: '12px' } },
+              h('label', { className: 'form-label' }, 'Spark Point Cost (⚡)'),
+              h('input', { type: 'number', className: 'cyber-input', value: rCost, onChange: e => setRCost(e.target.value), required: true })
+            ),
+            h('div', { className: 'modal-actions-row' },
+              h('button', { type: 'button', className: 'btn-secondary-cyber', onClick: () => setIsAddRewardOpen(false) }, 'Cancel'),
+              h('button', { type: 'submit', className: 'btn-primary-neon' }, '+ Add Reward')
+            )
+          )
+        )
+      ),
+
+      // Widget Guide Modal
+      isWidgetGuideOpen && h('div', { className: 'modal-backdrop', onClick: () => setIsWidgetGuideOpen(false) },
+        h('div', { className: 'glass-modal-card modal-large', onClick: e => e.stopPropagation() },
+          h('div', { className: 'modal-header' },
+            h('h3', { className: 'modal-title' }, '📱 Install Habitly Widget'),
+            h('button', { className: 'modal-close-btn', onClick: () => setIsWidgetGuideOpen(false) }, '✕')
+          ),
+          h('div', { className: 'platform-guides-grid' },
+            h('div', { className: 'guide-card' },
+              h('div', { className: 'guide-header' }, h('span', null, '🍏'), h('h4', null, 'iPhone / iPad (Safari)')),
+              h('ol', { className: 'guide-steps' },
+                h('li', null, 'Tap Share in bottom toolbar.'),
+                h('li', null, 'Select "Add to Home Screen".'),
+                h('li', null, 'Tap Add in top right.')
+              )
+            ),
+            h('div', { className: 'guide-card' },
+              h('div', { className: 'guide-header' }, h('span', null, '🤖'), h('h4', null, 'Android (Chrome)')),
+              h('ol', { className: 'guide-steps' },
+                h('li', null, 'Tap menu (⋮) in top right.'),
+                h('li', null, 'Select "Install App" or "Add to Home".'),
+                h('li', null, 'Tap Install to confirm.')
+              )
+            ),
+            h('div', { className: 'guide-card' },
+              h('div', { className: 'guide-header' }, h('span', null, '💻'), h('h4', null, 'Desktop (Chrome/Edge)')),
+              h('ol', { className: 'guide-steps' },
+                h('li', null, 'Click the Install icon (⊕) in address bar.'),
+                h('li', null, 'Click Install to pin.')
+              )
+            )
+          ),
+          h('div', { className: 'modal-actions-row' },
+            h('button', { className: 'btn-primary-neon', onClick: () => setIsWidgetGuideOpen(false) }, '✓ Got It!')
+          )
+        )
+      ),
+
+      // Level Up Modal
+      isLevelUpOpen && levelUpInfo && h('div', { className: 'modal-backdrop', onClick: () => setIsLevelUpOpen(false) },
+        h('div', { className: 'glass-modal-card modal-levelup text-center', onClick: e => e.stopPropagation() },
+          h('div', { className: 'levelup-badge-aura' }, '👑'),
+          h('h2', { className: 'levelup-title' }, `Level ${levelUpInfo.newLevel} Unlocked!`),
+          h('h4', { className: 'levelup-tier-name' }, levelUpInfo.newTitle),
+          h('p', { className: 'levelup-congrats' }, 'Your daily consistency has elevated your mastery!'),
+          h('button', { className: 'btn-primary-neon btn-block mt-4', onClick: () => setIsLevelUpOpen(false) }, '⚡ Claim & Continue')
+        )
+      ),
+
+      // Toasts
+      h('div', { className: 'toast-container' },
+        toasts.map(t => h('div', { key: t.id, className: `toast-card toast-${t.type}`, onClick: () => removeToast(t.id) },
+          h('div', { className: 'toast-content-col' },
+            h('span', { className: 'toast-title' }, t.title),
+            h('span', { className: 'toast-message' }, t.message)
+          )
+        ))
+      )
+    );
+  }
+
+  function App() {
+    return h(HabitlyProvider, null,
+      h('div', { className: 'habitly-app-root' },
+        h(Navigation, null),
+        h('div', { className: 'app-main-viewport' },
+          h(Topbar, null),
+          h('main', { className: 'dashboard-content-stream' },
+            h(CommandCenter, null),
+            h(ScheduleArchitect, null),
+            h(WidgetDock, null),
+            h(SmartReminderCenter, null),
+            h(HabitTracker, null),
+            h(TodoHub, null),
+            h(AnalyticsHub, null),
+            h(RewardVault, null)
+          )
+        ),
+        h(ModalsAndToasts, null)
+      )
+    );
+  }
+
+  // Mount instantly
+  const rootEl = document.getElementById('root');
+  if (rootEl && window.ReactDOM) {
+    const root = ReactDOM.createRoot(rootEl);
+    root.render(h(App, null));
+  }
+})();
